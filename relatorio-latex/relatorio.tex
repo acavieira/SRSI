@@ -1,0 +1,81 @@
+
+%%
+%% INSTRUCOES
+%%
+%% Imagem Docker para compilar o documento:
+%%
+%% docker pull texlive/texlive
+%%
+%% Levantar o container:
+%%
+%% docker run -it --rm -v "${PWD}:/doc" -w /doc texlive/texlive bash
+%%
+%% Compilar o documento para PDF:
+%%
+%% pdflatex relatorio
+%% bibtex relatorio
+%% pdflatex relatorio
+%% pdflatex relatorio
+%%
+
+\documentclass[a4paper, 12pt]{article}
+%\documentclass[a4paper, 12pt]{report}
+
+%%
+%% PACOTES
+%%
+
+\usepackage[utf8]{inputenc}
+\usepackage[portuguese]{babel}
+\usepackage{pdfpages} % incluir ficheiros PDF - para a capa
+\usepackage{indentfirst} % identar a primeira linha
+\usepackage[nottoc,numbib]{tocbibind} % referencias aparecerem no indice
+
+\usepackage{geometry}
+\geometry{margin=2.5cm} % diminuir a margem
+
+%%
+%% METADADOS
+%%
+
+\title{Relatorio }
+\author{Grupo}
+\date{\today}
+
+%%
+%% INICIO DO DOCUMENTO
+%%
+
+\begin{document}
+
+%% CAPA
+
+\includepdf{capa/capa.pdf}
+
+%% RESUMO
+
+\include{capitulos/00_resumo}
+
+%% INDICES
+
+\tableofcontents
+
+%\listoftables
+
+\listoffigures
+
+% CAPITULOS
+
+\include{capitulos/05_vulnerabilidades_testadas_nao_detetadas}
+
+\include{capitulos/06_questoes_conhecidas_reportadas_nivel_lataforma}
+
+% BIBLIOGRAFIA
+
+\bibliography{bibliografia/biblio}{}
+\bibliographystyle{apalike}
+
+%%
+%% FIM DO DOCUMENTO
+%%
+\end{document}
