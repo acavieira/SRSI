@@ -96,15 +96,9 @@ Foi identificado que a Base44, ao operar sobre Cloudflare, aplica políticas agr
 
 Embora benéfico em termos de performance, este comportamento pode atrasar o ciclo de resposta a incidentes (IR), contrariando boas práticas do NIST Computer Security Incident Handling Guide \cite{ref28}.
 
-\subsection{Relação com as Descobertas do Projeto}
-
-As vulnerabilidades observadas — nomeadamente as referências a source maps e a presença de strings HTTP em scripts minificados — alinham-se com as limitações conhecidas da plataforma Base44.
-
-Embora não constituam falhas diretas da aplicação, refletem restrições arquiteturais que limitam a capacidade de aplicar controlos de segurança mais robustos no ambiente de produção.
-
 \subsection{Conclusão}
 
-A compreensão destas limitações estruturais e operacionais da Base44 é essencial para uma análise de segurança completa.
+Embora não constituam falhas diretas da aplicação, estas vulnerabilidades refletem restrições arquiteturais que limitam a capacidade de aplicar controlos de segurança mais robustos no ambiente de produção.
 
 Mesmo quando o código da aplicação segue as boas práticas de segurança, a plataforma de alojamento pode introduzir riscos colaterais — seja por restrições técnicas, políticas de caching ou falta de controlo sobre cabeçalhos HTTP.
 
