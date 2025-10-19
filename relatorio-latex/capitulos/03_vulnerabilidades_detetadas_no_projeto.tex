@@ -1,8 +1,11 @@
 \section{Vulnerabilidades Detetadas no Projeto}
+\label{sec:vulnerabilidades-detetadas}
 
 \subsection{Source Map Exposure}
+\label{subsec:source-map-explosure}
 
 \subsubsection{Visão geral conceitual}
+\label{subsubsec:visao-geral-SME}
 
 No desenvolvimento web contemporâneo, os source maps constituem um recurso essencial de depuração, introduzido para conciliar a discrepância entre o código-fonte original e sua forma minificada ou transpilada. Sistemas de build como Webpack, Rollup, Vite e Babel geram estes arquivos auxiliares \texttt{.map} para auxiliar os desenvolvedores a rastrear a execução de volta ao código legível por humanos. Conforme documentado pela Mozilla Developer Network \cite{ref42}, os navegadores utilizam a diretiva  
 
@@ -15,16 +18,19 @@ para localizar e interpretar esses mapeamentos dentro das ferramentas de depura�
 Entretanto, em ambientes de produção, a exposição desses source maps configura um risco significativo de divulgação de informação. O Guia de Testes de Segurança Web da OWASP \cite{ref2} classifica tal exposição na categoria mais ampla de Information Leakage and Improper Error Handling, enfatizando que mesmo dados internos não sensíveis, como nomes de arquivos ou estruturas lógicas, podem capacitar os esforços de reconhecimento de um atacante. Arquivos \texttt{.map} acessíveis publicamente têm a capacidade de revelar a hierarquia de arquivos do projeto e a organização do framework, nomes de funções e variáveis que auxiliam na desofuscação, comentários de desenvolvedores e rastreamentos de depuração, e rotas internas de API, constantes de configuração, ou tokens de autenticação acidentalmente deixados no código. Uma vez recuperados, estes arquivos permitem aos atacantes reconstruir o modelo lógico completo da aplicação web, reduzindo substancialmente a barreira para a engenharia reversa e a descoberta de outras vulnerabilidades, como Cross-Site Scripting ou Insecure Direct Object References. De acordo com o CWE-200 \cite{ref43}, esta exposição se qualifica como Divulgação de Informação Sensível a um Ator Não Autorizado. 
 
 \subsubsection{Contexto teórico e de segurança}
+\label{subsubsec:contexto-teorico-SME}
 
 Teoricamente, a exposição de source maps compromete o componente de confidencialidade da tríade CIA (Confidencialidade, Integridade e Disponibilidade) \cite{ref47}. O princípio da confidencialidade dita que os dados internos e os detalhes de implementação devem permanecer acessíveis apenas a pessoal autorizado. Quando artefatos de depuração são recuperáveis publicamente, este princípio é violado, mesmo que o conteúdo exposto não seja imediatamente sensível. 
 
 No âmbito da estrutura de modelagem de ameaças STRIDE \cite{ref44}, esta vulnerabilidade se alinha com a categoria de Divulgação de Informação, cujo objetivo do atacante é extrair conhecimento em vez de manipular dados. É classificado como um ataque passivo, mas que pode servir como facilitador para exploits mais severos. Além disso, o NIST SP 800-53 \cite{ref3} lista informações de depuração residuais como um problema de gerenciamento de configuração nas famílias de controle CM (Configuration Management) e SI (System Integrity). O tratamento inadequado de artefactos de build é considerado uma fraqueza sistêmica que pode corroer a linha de base de segurança de todo o ambiente de implantação. 
 
 \subsubsection{Root Causes}
+\label{subsubsec:root-causes-SME}
 
 As principais causas raiz desta vulnerabilidade incluem a Configuração Imprópria de Build, onde desenvolvedores se esquecem de desativar a geração de source maps em produção (por exemplo, utilizando devtool: 'source-map' em vez de false). Outras causas são a Sincronização de Implantação Automatizada, na qual pipelines de integração contínua (CI/CD) ou serviços de hospedagem (CDNs, PaaS) carregam todos os arquivos do diretório de build sem filtragem; a Sobreposição de Ambientes, caracterizada pela falta de separação entre pipelines de staging e produção, levando ao vazamento de artefatos de não produção; e a Concepção Errónea do Desenvolvedor, que assume que os arquivos \texttt{.map} são inofensivos por serem auxiliares e "invisíveis" para utilizadores comuns. Estas causas são essencialmente procedimentais, e não falhas de nível de código, refletindo fraquezas na governança da implantação em vez de na lógica do software. \cite{ref8}
 
 \subsubsection{Estratégias de Mitigação}
+\label{subsubsec:mitigacao-SME}
 
 Os padrões da indústria prescrevem múltiplas abordagens de mitigação. A primeira é desativar a geração de source maps em builds de produção, o que pode ser feito 
 \begin{itemize}
@@ -49,6 +55,7 @@ grep -Rni 'sourceMappingURL' ~/scans/js
 , OWASP ZAP ou Burp Suite), e integrando verificações automatizadas em pipelines de CI/CD para falhar implantações se artefactos \texttt{.map} persistirem. Por fim, a Implementação de controlos de gestão de configuração é necessária. De acordo com o NIST SP 800-160 \cite{ref45}, verificações preventivas de configuração e regras de build seguras devem ser aplicadas em todas as fases do ciclo de vida, priorizando a prevenção sobre a deteção. 
 
 \subsubsection{Metodologia de Teste}
+\label{subsubsec:metogologia-teste-SME}
 
 A metodologia utilizada para identificar a possível exposição de source maps no projeto Base44 seguiu uma abordagem de teste de segurança em caixa cinza (grey-box testing), em conformidade com as diretrizes do OWASP WSTG v4.2 \cite{ref8} e as boas práticas do PTES. 
 
@@ -61,8 +68,10 @@ grep -Rni 'sourceMappingURL' ~/scans/js
 para detetar referências a source maps; a Verificação Manual, que incluiu tentativas de acesso direto aos arquivos indicados (e.g., vendors.b9747405.js.map), verificando o retorno HTTP; as Correlações e Avaliação de Risco, que demandaram a interpretação dos resultados em conformidade com CWE-200 \cite{ref43} e a classificação segundo CVSS 3.1 \cite{ref46}, avaliando o impacto potencial e a probabilidade de exposição futura; e a Documentação e Evidência, que garantiu o armazenamento dos resultados e logs de varredura para documentação de prova, conforme a metodologia PTES - Reporting Phase. É importante notar que essa metodologia foi não intrusiva e seguiu princípios éticos de teste (non-destructive assessment), assegurando a integridade da aplicação durante o processo. 
 
 \subsection{Mixed Content (Violação da Integridade HTTPS)}
+\label{subsec:mixed-content}
 
 \subsubsection{Visão geral conceitual}
+\label{subsubsec:visao-geral-MC}
 
 A arquitetura de segurança web moderna baseia-se no princípio da integridade da camada de transporte, garantindo que todos os dados trocados entre um utilizador e um servidor web sejam criptografados e autenticados por meio do HTTPS. O HTTPS utiliza o TLS, proporcionando confidencialidade e integridade das comunicações ao proteger contra eavesdropping, manipulação de conteúdo e ataques de falsificação de identidade. \cite{ref48}
 
@@ -71,6 +80,7 @@ Um website é considerado totalmente seguro apenas se todos os seus recursos, in
 Duas formas de conteúdo misto são reconhecidas: o Conteúdo Misto Ativo, que são recursos executáveis (scripts, iframes, folhas de estilo, requisições XHR) carregados via HTTP. Estes podem alterar ou controlar diretamente o DOM e, consequentemente, comprometer a segurança integral da página. A segunda forma é o Conteúdo Misto Passivo, que inclui recursos não executáveis (imagens, vídeos, arquivos de áudio) carregados via HTTP. Embora estes não executem código, eles ainda expõem metadados e enfraquecem a percepção de confiança do utilizador na conexão. Ambos os tipos degradam a garantia de segurança de ponta a ponta do HTTPS, anulando efetivamente as proteções oferecidas pelo TLS. Se um atacante conseguir interceptar qualquer requisição HTTP não criptografada, ele pode injetar scripts maliciosos, substituir conteúdo legítimo ou modificar dados em trânsito, subvertendo todo o modelo de segurança. \cite{ref49}
 
 \subsubsection{Contexto Teórico e de Segurança}
+\label{subsubsec:contexto-teorico-MC}
 
 Do ponto de vista teórico, o conteúdo misto viola diretamente os pilares de integridade e confidencialidade da tríade CIA. Embora o TLS assegure que sessões criptografadas não possam ser modificadas ou lidas por intermediários, a inclusão de até mesmo um único sub-recurso HTTP quebra esta cadeia de integridade. Atacantes posicionados no caminho da rede, como em Wi-Fi públicos, roteadores comprometidos ou servidores proxy, podem explorar tais fraquezas para injetar ou alterar conteúdo não criptografado, efetivamente degradando a segurança da página inteira. 
 
@@ -79,16 +89,19 @@ A Especificação de Conteúdo Misto do W3C \cite{ref50} estabelece explicitamen
 Na prática, a exploração de conteúdo misto pode ocorrer em dois cenários primários: por Injeção Man-in-the-Middle, onde um atacante intercepta o tráfego HTTP não seguro e modifica recursos (por exemplo, injetando JavaScript num script ou imagem de conteúdo misto), ou por Exploração de Downgrade ou Falha de Caminho, onde uma atacante força a desclassificação e manipula respostas se a aplicação permitir o fallback dinâmico para HTTP. 
 
 \subsubsection{Root Causes}
+\label{subsubsec:root-cause-MC}
 
 Fontes comuns de vulnerabilidades de conteúdo misto incluem Dependências Legadas, ou seja, bibliotecas antigas ou recursos externos (CDNs, análise, imagens) com URLs http:// codificadas. Outras causas são a Má Configuração do Ambiente de Build, em que os pipelines de construção falham ao impor a reescrita para HTTPS durante a compilação ou minificação; o Linkagem de Recursos Externos, onde scripts de terceiros ou redes de publicidade não utilizam protocolos seguros; e a Migração Parcial para HTTPS, quando sites são atualizados de HTTP para HTTPS sem uma atualização abrangente dos links. Estas questões frequentemente persistem devido à complexidade da gestão de dependências nos ecossistemas modernos de JavaScript e à pouca visibilidade sobre os recursos de fornecedores empacotados. \cite{ref49}
 
 \subsubsection{Estratégias de Mitigação}
+\label{subsubsec:mitigacao-MC}
 
 Padrões e melhores práticas da indústria propõem múltiplas contramedidas para eliminar o conteúdo misto. A primeira é a Aplicação Total de HTTPS, que implica garantir que todos os recursos internos e externos sejam acessíveis via HTTPS e configurar o HTTP Strict Transport Security com o cabeçalho Strict-Transport-Security para impor o acesso exclusivo via HTTPS. A CSP deve ser utilizada, empregando a diretiva upgrade-insecure-requests para converter automaticamente quaisquer chamadas de recursos http:// para https://, e incluindo block-all-mixed-content para evitar o carregamento inseguro de ativos legados. A Gestão de Dependências requer a auditoria regular de bibliotecas de terceiros, garantindo que elas referenciem apenas endpoints seguros, e observando que ferramentas de build modernas podem reescrever automaticamente referências de URL durante o processo de construção. Redirecionamentos e Reescritas do Lado do Servidor são cruciais para impor HTTPS no nível do servidor web ou CDN, redirecionando todas as requisições HTTP para seus equivalentes HTTPS. Por fim, o Monitoramento Contínuo deve ser empregado através de scanners automatizados (como OWASP ZAP ou Mozilla Observatory) para detectar violações de conteúdo misto em builds de produção. \cite{ref52}
 
 Cada uma destas mitigações está em alinhamento com os controles do NIST SP 800-53 Rev. 5 sobre a integridade da transmissão e com o OWASP A08:2021 – Software and Data Integrity Failures, que engloba a proteção de transporte inadequada.
 
 \subsubsection{Metodologia de Teste}
+\label{subsubsec:metogologia-teste-MC}
 
 A metodologia de deteção de Mixed Content seguiu o modelo de teste de segurança em caixa cinza (grey-box testing), conforme os padrões OWASP WSTG v4.2 e PTES \cite{ref1}. 
 
@@ -97,3 +110,129 @@ As etapas executadas incluíram a Coleta de Informações, através do comando \
 grep -Rni "http://" ~/scans/js; 
 \end{verbatim}
 a Validação de Recursos, por meio de testes com navegadores em modo desenvolvedor para identificar requisições bloqueadas como conteúdo misto; a Classificação de Severidade, que envolveu a avaliação do impacto com base em critérios do CVSS 3.1 \cite{ref46} e a categorização segundo OWASP A08:2021; e a Documentação, que garantiu o registro dos resultados, evidências e URLs vulneráveis, com identificação dos recursos afetados e das dependências inseguras. Este teste foi conduzido de forma não intrusiva, não alterando o comportamento da aplicação e respeitando as políticas éticas de penetration testing.
+
+\subsection{DOM-based XSS}
+\label{subsec:dom-based-xss}
+
+O Cross-site Scripting (XSS) é uma das vulnerabilidades mais comuns em aplicações web, estando consistentemente no Top 10 da OWASP. Esta vulnerabilidade permite que atacantes injetem código malicioso (geralmente JavaScript) em páginas web visualizadas por outros utilizadores, comprometendo a integridade da aplicação e a segurança dos dados.
+
+O DOM-based XSS representa uma variante específica desta vulnerabilidade, em que o ataque ocorre inteiramente no lado do cliente, ou seja, no navegador do utilizador. Ao contrário das abordagens tradicionais de XSS (refletido ou armazenado), que exploram respostas do servidor, o DOM-based XSS resulta de manipulações inseguras feitas pelo próprio código JavaScript da aplicação \cite{ref30}.
+
+Neste tipo de ataque, o JavaScript lê dados potencialmente maliciosos provenientes de fontes como parâmetros do URL (\texttt{location.search}), fragmentos do URL (\texttt{location.hash}), armazenamento local (\texttt{localStorage}, \texttt{sessionStorage}) e mensagens recebidas via \texttt{postMessage}.
+
+Estes dados são então inseridos diretamente no DOM através de funções conhecidas como \textit{sinks} inseguros, como o \texttt{innerHTML}, \texttt{outerHTML}, \texttt{insertAdjacentHTML}, \texttt{document.write}, \texttt{eval}, \texttt{new Function} e APIs que interpretam HTML ou JavaScript \cite{ref31}.
+
+Se esses dados não forem devidamente validados e tratados, o navegador pode interpretar e executar o conteúdo malicioso, resultando em execução de código não autorizado \cite{ref29}.
+
+\subsubsection{Riscos e Impacto dos Ataques DOM-based XSS}
+\label{subsubsec:riscos-impacto-dom-xss}
+
+Os ataques DOM-based XSS representam uma ameaça significativa à segurança das aplicações web, especialmente quando estas manipulam dados sensíveis ou sessões de utilizadores. Estes ataques podem ser explorados para:
+
+\begin{itemize}
+    \item \textbf{Roubo de dados} em que código malicioso pode ser executado no contexto da aplicação, permitindo o acesso a cookies (caso não estejam protegidos com a flag \texttt{HttpOnly}), tokens armazenados no \texttt{localStorage} ou \texttt{sessionStorage}, e outros dados confidenciais.
+    
+    \item \textbf{Manipulação da interface} pois o atacante pode alterar elementos visuais da página, simulando interfaces legítimas para enganar o utilizador (phishing).
+    
+    \item \textbf{Execução de ações não autorizadas} porque é possível orquestrar ataques como CSRF ou SSRF, explorando a confiança do navegador na origem da aplicação.
+\end{itemize}
+
+Esta vulnerabilidade é particularmente difícil de detetar, pois não envolve comunicação com o servidor, fazendo com que o código malicioso seja processado e executado exclusivamente no cliente \cite{ref30}. Além disso, como o código gerado por plataformas no-code (como a Base44) é frequentemente compilado e abstraído, torna-se ainda mais desafiante identificar e corrigir estas falhas.
+
+\subsubsection{Boas práticas de prevenção}
+\label{subsubsec:boas-praticas-prevencao-dom-xss}
+
+A mitigação eficaz de DOM-based XSS deve ser integrada desde a fase de arquitetura até ao ciclo de desenvolvimento. Algumas estratégias recomendadas incluem \cite{ref31}, \cite{ref32}:
+
+\begin{itemize}
+    \item \textbf{Uso de APIs seguras} em que são preferíveis métodos como \texttt{textContent}, \texttt{setAttribute} (com validação), \texttt{value} para campos de formulário, e \texttt{createElement} com \texttt{appendChild}, em vez de \texttt{innerHTML} ou \texttt{eval}.
+    
+    \item \textbf{Tratamento robusto de dados} utilizando bibliotecas confiáveis com listas de permissões (\textit{allowlists}) para limpar dados antes de os inserir no DOM. Evitar soluções caseiras baseadas em expressões regulares, que são frequentemente insuficientes.
+    
+    \item \textbf{Codificação por contexto} em que se aplica \textit{output encoding} adequado ao tipo de conteúdo quer seja HTML, atributos, URLs, CSS ou JavaScript de modo a evitar interpretações indevidas.
+    
+    \item \textbf{Eliminação de funções perigosas} para isto evita-se completamente o uso de \texttt{eval} e \texttt{new Function}. Caso sejam indispensáveis, devem ser isoladas em ambientes controlados.
+    
+    \item \textbf{Políticas de segurança no navegador} implementando cabeçalhos como CSP com \textit{nonce} ou \textit{hash}, que ajudam a bloquear scripts injetados. Complementar com \texttt{X-Content-Type-Options: nosniff}, \texttt{Referrer-Policy} e \texttt{Permissions-Policy} para reduzir a superfície de ataque.
+    
+    \item \textbf{Minimização da superfície de confiança} limitando o acesso a fontes como \texttt{location}, \texttt{document.referrer} e \texttt{localStorage}, e validar rigorosamente o formato dos dados recebidos.
+\end{itemize}
+
+\subsubsection{Metodologias de teste}
+\label{subsubsec:metodologias-teste-dom-xss}
+
+A identificação de vulnerabilidades DOM-based XSS requer uma combinação de técnicas manuais e automáticas como \cite{ref29}, \cite{ref33}:
+
+\begin{enumerate}
+    \item \textbf{Mapeamento de fontes e sinks} em que se identifica onde os dados entram na aplicação (ex.: \texttt{location.search}, \texttt{postMessage}, inputs do utilizador) e onde são inseridos no DOM (ex.: \texttt{innerHTML}, \texttt{eval}, \texttt{insertAdjacentHTML}).
+    
+    \item \textbf{Revisão estática do código} analisando o JavaScript compilado ou minificado, procurando padrões perigosos. Ferramentas como \textit{source maps} ou \textit{prettifiers} podem ajudar a tornar o código mais legível.
+    
+    \item \textbf{Instrumentação dinâmica} recorrendo ferramentas como o DOM Invader (Burp Suite) ou DevTools para observar o comportamento do código em tempo real e seguir o caminho dos dados até aos \textit{sinks}.
+    
+    \item \textbf{Testes manuais seguros} em que se injetam marcadores identificáveis (ex.: \texttt{INJECTION\_TEST\_123}) nos pontos de entrada e se verifica se aparecem no DOM sem codificação adequada.
+    
+    \item \textbf{Ferramentas automáticas} e neste âmbito existem scanners especializados em DOM-XSS, como proposto por Melicher et al. \cite{ref33}, linters com plugins de segurança (ex.: ESLint), e ferramentas de análise de dependências para verificar bibliotecas externas que manipulam HTML.
+    
+    \item \textbf{Avaliação de mitigadores} confirmando que as políticas de segurança estão ativas e são eficazes, e que os métodos seguros estão a ser utilizados corretamente.
+\end{enumerate}
+
+\subsection{Potential Open Redirects}
+\label{subsec:potential-open-redirects}
+
+Os redirecionamentos abertos (\textit{open redirects}) constituem uma vulnerabilidade lógica que ocorre quando uma aplicação permite que o utilizador seja redirecionado para um URL externo, com base num parâmetro do URL, sem validação adequada. Esta falha pode ser explorada por atacantes para conduzir utilizadores a sites maliciosos, disfarçando o destino real por trás de um domínio legítimo. Embora não envolva execução de código diretamente, o impacto pode ser significativo, sobretudo em contextos de phishing, onde a confiança do utilizador na aplicação é essencial.
+
+Durante a análise da aplicação desenvolvida com a plataforma Base44, foram identificadas estruturas de código que utilizam variáveis como \texttt{redirect} e \texttt{URL} na lógica de navegação. Embora não tenha sido demonstrada uma exploração direta, a presença destas variáveis sugere que o sistema pode aceitar valores externos para redirecionamento, o que representa um vetor de ataque potencial. Esta preocupação é corroborada por Khodayari et al. \cite{ref34}, que demonstram como redirecionamentos abertos podem ser explorados de forma sofisticada, desafiando a perceção comum de que são inofensivos.
+
+\subsubsection{Riscos e implicações}
+\label{subsubsec:riscos-implicacoes-open-redirects}
+
+Os \textit{open redirects} podem ser explorados em diversos cenários:
+
+\begin{itemize}
+    \item Em ataques de \textbf{phishing}, o atacante pode enviar um link aparentemente legítimo que redireciona para uma página falsa, capturando credenciais do utilizador \cite{ref35}.
+    
+    \item Em sistemas de segurança baseados em listas de permissões, os users podem ser enganados, confiando no domínio inicial sem verificar o destino final \cite{ref34}.
+    
+    \item Em fluxos de autenticação como OAuth ou SSO, redirecionamentos mal validados podem permitir a captura de tokens de sessão \cite{ref36}.
+    
+    \item Além disso, o domínio legítimo pode ser usado para disseminar links maliciosos, afetando a reputação da aplicação.
+\end{itemize}
+
+\subsubsection{Estratégias de mitigação}
+\label{subsubsec:estrategias-mitigacao-open-redirects}
+
+A mitigação desta vulnerabilidade passa por várias abordagens:
+
+\begin{itemize}
+    \item \textbf{Listas de destinos permitidos}: A abordagem mais eficaz consiste na utilização de \textit{allowlists}, validando se o destino pertence a um conjunto de domínios ou caminhos autorizados \cite{ref36}.
+    
+    \item \textbf{Uso de caminhos relativos}: É recomendável o uso de caminhos relativos, como \texttt{next=/dashboard}, e a validação com \texttt{startsWith('/')}.
+    
+    \item \textbf{Evitar redirecionamentos arbitrários}: Em fluxos sensíveis, como a autenticação ou recuperação de senha, deve-se evitar redirecionamentos arbitrários.
+    
+    \item \textbf{Tokenização}: Uma alternativa segura é a tokenização, onde o parâmetro recebido é um identificador que mapeia para um URL seguro armazenado no servidor \cite{ref34}.
+    
+    \item \textbf{Validação rigorosa}: Deve incluir a canonicalização do URL, bloqueando esquemas perigosos como \texttt{javascript:} ou \texttt{data:} \cite{ref36}.
+    
+    \item \textbf{Página intermediária}: Em casos onde o redirecionamento externo é necessário, é aconselhável apresentar uma página intermediária que informe o utilizador sobre o destino, promovendo a transparência e reduzindo o risco de \textit{Social Engineering} \cite{ref35}.
+\end{itemize}
+
+\subsubsection{Metodologia de Teste}
+\label{subsubsec:metodologia-teste-open-redirects}
+
+A deteção de \textit{open redirects} pode ser realizada através de:
+
+\begin{itemize}
+    \item \textbf{Revisão de código}: procurando por padrões como \texttt{location.href}, \texttt{window.location}, \texttt{res.redirect}, \texttt{window.open}, entre outros \cite{ref37}.
+    
+    \item \textbf{Testes manuais}: consistem em injetar parâmetros controlados e observar o comportamento da aplicação, verificando se o redirecionamento ocorre sem validação.
+    
+    \item \textbf{Testes de bypass}: incluem variações como \texttt{//malicioso.com}, URLs com \texttt{@}, codificações Unicode ou esquemas obsoletos \cite{ref38}.
+    
+    \item \textbf{Validação de fluxos OAuth/SSO}: é essencial confirmar se o parâmetro \texttt{redirect\_uri} é validado contra uma lista segura \cite{ref36}.
+    
+    \item \textbf{Ferramentas automáticas}: como Burp Suite, ZAP e linters estáticos podem auxiliar na identificação de padrões vulneráveis \cite{ref39}.
+    
+    \item \textbf{Precauções durante testes}: é fundamental evitar redirecionamentos para domínios maliciosos, utilizando marcadores inócuos e documentando os passos de reprodução \cite{ref40}.
+\end{itemize}
