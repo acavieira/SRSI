@@ -1,1 +1,123 @@
 \section{Questões Conhecidas e Reportadas ao Nível da Plataforma (Base44)}
+
+Para além das vulnerabilidades específicas detetadas na aplicação em si, é também essencial considerar as limitações estruturais da plataforma de alojamento — neste caso, a Base44.
+
+Tal como documentado em fóruns de utilizadores e fontes técnicas, a Base44 adota uma arquitetura no-code/low-code baseada em deployments edge através da infraestrutura da Cloudflare, o que traz benefícios de desempenho, mas também restrições de controlo a nível de servidor \cite{ref16}, \cite{ref2}.
+
+Estas limitações têm implicações diretas na superfície de ataque, na gestão de cabeçalhos de segurança, e na rapidez de resposta a incidentes. A seguir detalham-se os principais pontos identificados.
+
+\subsection{Infraestrutura Baseada em Cloudflare e Deployments Edge}
+
+\subsubsection{Enquadramento Teórico}
+
+A arquitetura edge consiste na distribuição de conteúdos através de múltiplos nós geograficamente dispersos (edge servers), com o objetivo de reduzir a latência e aumentar a disponibilidade \cite{ref17}.
+
+Neste modelo, o controlo direto sobre o servidor de origem é frequentemente substituído por políticas de cache e regras de proxy geridas pela rede CDN (Content Delivery Network).
+
+Embora este modelo proporcione resiliência, escalabilidade e mitigação de DDoS, também implica que o utilizador não tenha acesso direto à camada de aplicação ou ao servidor HTTP.
+
+Isto limita a capacidade de configurar:
+
+\begin{itemize}
+
+\item cabeçalhos personalizados (e.g., CSP, HSTS, CORS),
+
+\item regras de resposta dinâmica,
+
+\item e mecanismos de logging ou auditoria específicos \cite{ref18}.
+
+\end{itemize}
+
+\subsubsection{Impacto Prático}
+
+Na Base44, que utiliza Cloudflare como infraestrutura de distribuição, observou-se que os desenvolvedores têm controlo limitado sobre as políticas de segurança no nível HTTP, dependendo inteiramente das definições predefinidas da plataforma.
+
+Essa abordagem reduz a flexibilidade de endurecimento (hardening) da aplicação, comprometendo parcialmente a capacidade de cumprir normas como as do OWASP Secure Headers Project \cite{ref19}.
+
+\subsection{Exposição Acidental de Ficheiros .map (Source Maps)}
+
+\subsubsection{Enquadramento Teórico}
+
+Os source maps (.map) são ficheiros gerados durante o processo de build de aplicações JavaScript ou TypeScript, permitindo mapear o código minificado para a sua versão original.
+
+Embora úteis em contexto de desenvolvimento, estes ficheiros podem expor estruturas internas de código, nomes de variáveis, endpoints e tokens de depuração — representando um risco grave de fuga de informação \cite{ref20}.
+
+A OWASP classifica este tipo de exposição como uma forma de Information Disclosure (A05:2021 - Security Misconfiguration) \cite{ref21}.
+
+\subsubsection{Situação Observada na Plataforma}
+
+Em relatórios de utilizadores, foram mencionadas situações em que os ficheiros .map foram tornados públicos por omissão, devido a políticas de deploy ou configurações de cache da Base44 \cite{ref22}.
+
+No caso da aplicação analisada, os pedidos a ficheiros .map retornaram código 404, o que é positivo; no entanto, as referências sourceMappingURL permaneciam presentes nos scripts minificados, o que representa um risco potencial se a plataforma, num futuro deploy, deixar de bloquear esses ficheiros corretamente.
+
+\subsubsection{Recomendações}
+
+Recomenda-se a remoção das referências sourceMappingURL em builds de produção, e a verificação periódica dos endpoints expostos via ferramentas automatizadas como o Burp Suite ou OWASP ZAP \cite{ref23}.
+
+\subsection{Impossibilidade de Configurar Cabeçalhos de Segurança (CORS, CSP, etc.)}
+
+\subsubsection{Enquadramento Teórico}
+
+Os HTTP Security Headers são mecanismos fundamentais para reforçar a segurança no lado do cliente.
+
+Cabeçalhos como Content-Security-Policy (CSP) e Access-Control-Allow-Origin (CORS) permitem controlar o carregamento de scripts externos, mitigar ataques XSS, e restringir o intercâmbio de dados entre origens \cite{ref19}, \cite{ref24}.
+
+Em plataformas no-code, a ausência de acesso ao servidor impede muitas vezes a definição granular destes cabeçalhos, criando um risco de conformidade parcial com o OWASP Top 10 e outras normas de segurança aplicáveis \cite{ref25}.
+
+\subsubsection{Situação na Base44}
+
+A Base44 não permite configuração manual ou granular de cabeçalhos HTTP de segurança. Isto afeta diretamente a capacidade de mitigar vulnerabilidades como:
+
+\begin{itemize}
+
+\item Cross-Site Scripting (XSS);
+
+\item Data Injection via scripts externos;
+
+\item Resource Manipulation em ambientes de terceiros.
+
+\end{itemize}
+
+Esta limitação obriga o programador a compensar a falta de controlo através de medidas no próprio código (por exemplo, sanitização rigorosa e uso de trusted content sources).
+
+\subsection{Caching Persistente pela CDN}
+
+\subsubsection{Enquadramento Teórico}
+
+O caching distribuído é uma técnica essencial em CDNs para otimizar o desempenho, armazenando recursos em servidores edge.
+
+No entanto, este mecanismo pode criar problemas de propagação lenta após atualizações críticas, especialmente quando ficheiros comprometidos ou sensíveis permanecem em cache por períodos prolongados \cite{ref26}.
+
+Este fenómeno, conhecido como cache inertia, é particularmente perigoso quando uma vulnerabilidade corrigida no servidor demora a refletir-se em toda a rede CDN \cite{ref27}.
+
+\subsubsection{Situação na Base44}
+
+Foi identificado que a Base44, ao operar sobre Cloudflare, aplica políticas agressivas de caching, o que pode atrasar a propagação de correções de segurança ou remoção de ficheiros sensíveis.
+
+Embora benéfico em termos de performance, este comportamento pode atrasar o ciclo de resposta a incidentes (IR), contrariando boas práticas do NIST Computer Security Incident Handling Guide \cite{ref28}.
+
+\subsection{Relação com as Descobertas do Projeto}
+
+As vulnerabilidades observadas — nomeadamente as referências a source maps e a presença de strings HTTP em scripts minificados — alinham-se com as limitações conhecidas da plataforma Base44.
+
+Embora não constituam falhas diretas da aplicação, refletem restrições arquiteturais que limitam a capacidade de aplicar controlos de segurança mais robustos no ambiente de produção.
+
+\subsection{Conclusão}
+
+A compreensão destas limitações estruturais e operacionais da Base44 é essencial para uma análise de segurança completa.
+
+Mesmo quando o código da aplicação segue as boas práticas de segurança, a plataforma de alojamento pode introduzir riscos colaterais — seja por restrições técnicas, políticas de caching ou falta de controlo sobre cabeçalhos HTTP.
+
+Assim, recomenda-se que os programadores:
+
+\begin{enumerate}
+
+    \item Verifiquem regularmente o estado de exposição de ficheiros no build;
+
+    \item Testem a presença de cabeçalhos de segurança via ferramentas automatizadas;
+
+    \item Reavaliem periodicamente a configuração de cache após atualizações críticas.
+
+\end{enumerate}
+
+Estas medidas ajudam a compensar as limitações da plataforma e garantem um nível mais elevado de resiliência e conformidade com o OWASP e o NIST CSF \cite{ref2}, \cite{ref18}.
