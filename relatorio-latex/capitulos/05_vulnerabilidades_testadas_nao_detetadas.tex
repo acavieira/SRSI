@@ -1,1 +1,124 @@
 \section{Vulnerabilidades Testadas mas Não Detetadas}
+
+Durante a análise de segurança à aplicação alojada na plataforma Base44, foram também considerados outros vetores de ataque comuns em aplicações web modernas, com o objetivo de realizar uma avaliação mais abrangente e alinhada com as boas práticas internacionais de segurança \cite{ref1}, \cite{ref2}.
+
+Ainda que não tenham sido identificadas ocorrências dessas vulnerabilidades no projeto em análise, a sua inclusão demonstra uma abordagem metodológica informada e coerente com os princípios do OWASP e das normas NIST \cite{ref3}, \cite{ref4}.
+
+Segue-se o resumo das vulnerabilidades analisadas, precedido por uma breve descrição teórica de cada uma.
+
+\subsection{CORS Mal Configurado (Cross-Origin Resource Sharing)}
+
+\subsubsection{Enquadramento Teórico}
+
+O Cross-Origin Resource Sharing (CORS) é um mecanismo de segurança implementado nos navegadores modernos que controla como recursos (por exemplo, dados de APIs) podem ser solicitados entre diferentes origens (origins) \cite{ref5}.
+
+Sem CORS, o Same-Origin Policy (SOP) impede que scripts executados numa origem (e.g., https://app.example.com) acedam a recursos noutra (e.g., https://api.example.org).
+
+Uma configuração incorreta de CORS pode permitir que um domínio malicioso obtenha dados sensíveis através de pedidos legítimos, violando a confidencialidade da aplicação \cite{ref6}. Exemplos comuns incluem:
+\begin{itemize}
+
+\item Cabeçalhos permissivos, como Access-Control-Allow-Origin: *;
+
+\item Reflexão do valor de Origin sem validação;
+
+\item Permissão de cabeçalhos ou métodos inseguros.
+
+\end{itemize}
+
+\subsubsection{Análise Realizada}
+
+Foi efetuado um teste manual utilizando o comando curl com cabeçalhos personalizados de Origin, de forma a verificar se o servidor aceitava requisições de domínios externos sem validação adequada.
+
+curl -I -H "Origin: http://malicious.example.com" https://app.base44.io
+
+Durante os testes, não foram detetadas configurações permissivas, nem cabeçalhos vulneráveis. Conclui-se que a aplicação não apresenta fragilidades relacionadas com CORS nesta fase \cite{ref7}.
+
+\subsection{Riscos Associados a Service Workers e Cache Storage}
+
+\subsubsection{Enquadramento Teórico}
+
+Os Service Workers são scripts registados pelo navegador que atuam como proxies entre a aplicação e a rede, permitindo funcionalidades como execução offline, background synchronization e push notifications \cite{ref8}.
+
+Embora úteis, podem introduzir riscos de segurança se mal configurados - nomeadamente:
+
+\begin{itemize}
+
+\item Cache poisoning, quando conteúdo malicioso é armazenado e servido como legítimo;
+
+\item Persistent malicious scripts, que se mantêm mesmo após correções no servidor;
+
+\item Manutenção indevida de dados sensíveis em Cache Storage.
+
+\end{itemize}
+
+Uma aplicação que utilize Service Workers deve assegurar controlos de integridade, escopo restrito e atualização segura \cite{ref9}.
+
+\subsubsection{Análise Realizada}
+
+A análise ao código-fonte revelou ausência de qualquer registo ou implementação de Service Workers e de uso explícito da Cache Storage API, tornando este vetor não aplicável ao projeto em análise.
+
+Consequentemente, os riscos associados a offline persistence ou manipulação de cache são inexistentes nesta fase.
+
+\subsection{Vulnerabilidades em Scripts de Terceiros}
+
+\subsubsection{Enquadramento Teórico}
+
+Bibliotecas e frameworks de terceiros são componentes fundamentais no desenvolvimento web, mas também representam uma das principais superfícies de ataque modernas \cite{ref10}.
+
+Ataques à cadeia de fornecimento (supply chain attacks) podem ocorrer quando uma dependência legítima é comprometida, afetando todas as aplicações que a utilizam.
+
+Outros riscos incluem:
+
+\begin{itemize}
+
+\item Inclusão de versões desatualizadas com vulnerabilidades conhecidas (CVE);
+
+\item Hospedagem de scripts em CDNs não confiáveis;
+
+\item Modificação de dependências por terceiros não autorizados.
+
+\end{itemize}
+
+A OWASP recomenda o uso de ferramentas de verificação de dependências e auditorias regulares para reduzir esse risco \cite{ref11}.
+
+\subsubsection{Análise Realizada}
+
+Foi conduzida uma inspeção estática e dinâmica aos ficheiros JavaScript utilizados na aplicação, com foco nas dependências externas.
+
+Verificou-se que apenas foram incluídas versões oficiais hospedadas em CDNs reputadas, como jsDelivr e Cloudflare.
+
+Não foram encontradas bibliotecas desatualizadas ou modificadas, reduzindo significativamente o risco de exploração.
+
+\subsection{Exposição de Tokens ou Chaves API}
+
+\subsubsection{Enquadramento Teórico}
+
+A exposição de segredos (como tokens, chaves de API ou credenciais) é uma das falhas mais comuns em aplicações web e representa uma ameaça direta à integridade e confidencialidade do sistema \cite{ref12}.
+
+Quando segredos estão embutidos no código-fonte — especialmente no frontend — tornam-se acessíveis a qualquer utilizador que inspecione o código, permitindo:
+
+\begin{itemize}
+
+\item Autenticação não autorizada em APIs;
+
+\item Acesso a dados confidenciais;
+
+\item Comprometimento de outros serviços integrados.
+
+\end{itemize}
+
+A OWASP recomenda a gestão centralizada de segredos, armazenamento seguro no servidor e rotação periódica de chaves \cite{ref13}.
+
+\subsubsection{Análise Realizada}
+
+Durante a análise estática do código-fonte (HTML, JavaScript e cabeçalhos HTTP), procuraram-se padrões típicos de exposição de segredos, incluindo termos como apiKey, token, Authorization, e chaves codificadas em Base64.
+
+Foram efetuadas pesquisas manuais e automatizadas, incluindo inspeção de ficheiros minificados.
+
+Não foram identificados valores sensíveis embutidos no código, o que demonstra uma boa segregação de segredos e práticas seguras de gestão de credenciais \cite{ref14}, \cite{ref15}.
+
+\subsection{Conclusão}
+
+Embora nenhuma destas vulnerabilidades tenha sido identificada na aplicação analisada, a sua verificação foi essencial para garantir uma abordagem responsável, abrangente e conforme as normas internacionais de segurança.
+
+Os resultados reforçam que, mesmo em ambientes no-code e com integração de IA, é possível seguir metodologias de análise de risco alinhadas com os princípios do OWASP Top 10 (2021) e do NIST Cybersecurity Framework (CSF) \cite{ref2}, \cite{ref4}.
