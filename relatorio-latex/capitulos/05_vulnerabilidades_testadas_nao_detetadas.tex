@@ -6,20 +6,20 @@ Ainda que não tenham sido identificadas ocorrências dessas vulnerabilidades no
 
 Segue-se o resumo das vulnerabilidades analisadas, precedido por uma breve descrição teórica de cada uma.
 
-\subsection{CORS Mal Configurado (Cross-Origin Resource Sharing)}
+\subsection{CORS Mal Configurado (\textit{Cross-Origin Resource Sharing})}
 
 \subsubsection{Enquadramento Teórico}
 
-O Cross-Origin Resource Sharing (CORS) é um mecanismo de segurança implementado nos navegadores modernos que controla como recursos (por exemplo, dados de APIs) podem ser solicitados entre diferentes origens (origins) \cite{ref5}.
+O \textit{Cross-Origin Resource Sharing} (CORS) é um mecanismo de segurança implementado nos navegadores modernos que controla como recursos (por exemplo, dados de APIs) podem ser solicitados entre diferentes origens (\textit{origins}) \cite{ref5}.
 
-Sem CORS, o Same-Origin Policy (SOP) impede que scripts executados numa origem (e.g., https://app.example.com) acedam a recursos noutra (e.g., https://api.example.org).
+Sem CORS, o \textit{Same-Origin Policy} (SOP) impede que \textit{scripts} executados numa origem (e.g., \url{https://app.example.com}) acedam a recursos noutra (e.g., \url{https://api.example.org}).
 
 Uma configuração incorreta de CORS pode permitir que um domínio malicioso obtenha dados sensíveis através de pedidos legítimos, violando a confidencialidade da aplicação \cite{ref6}. Exemplos comuns incluem:
 \begin{itemize}
 
 \item Cabeçalhos permissivos, como Access-Control-Allow-Origin: *;
 
-\item Reflexão do valor de Origin sem validação;
+\item Reflexão do valor de \textit{Origin} sem validação;
 
 \item Permissão de cabeçalhos ou métodos inseguros.
 
@@ -27,45 +27,45 @@ Uma configuração incorreta de CORS pode permitir que um domínio malicioso obt
 
 \subsubsection{Análise Realizada}
 
-Foi efetuado um teste manual utilizando o comando curl com cabeçalhos personalizados de Origin, de forma a verificar se o servidor aceitava requisições de domínios externos sem validação adequada.
+Foi efetuado um teste manual utilizando o comando cURL com cabeçalhos personalizados de \textit{Origin}, de forma a verificar se o servidor aceitava requisições de domínios externos sem validação adequada.\\
 
-curl -I -H "Origin: http://malicious.example.com" https://app.base44.io
+\verb!curl -I -H "Origin: http://malicious.example.com" https://app.base44.io!\\
 
 Durante os testes, não foram detetadas configurações permissivas, nem cabeçalhos vulneráveis. Conclui-se que a aplicação não apresenta fragilidades relacionadas com CORS nesta fase \cite{ref7}.
 
-\subsection{Riscos Associados a Service Workers e Cache Storage}
+\subsection{Riscos Associados a \textit{Service Workers e Cache Storage}}
 
 \subsubsection{Enquadramento Teórico}
 
-Os Service Workers são scripts registados pelo navegador que atuam como proxies entre a aplicação e a rede, permitindo funcionalidades como execução offline, background synchronization e push notifications \cite{ref8}.
+Os \textit{Service Workers} são \textit{scripts} registados pelo navegador que atuam como \textit{proxies} entre a aplicação e a rede, permitindo funcionalidades como execução \textit{offline}, \textit{background synchronization} e \textit{push notifications} \cite{ref8}.
 
 Embora úteis, podem introduzir riscos de segurança se mal configurados - nomeadamente:
 
 \begin{itemize}
 
-\item Cache poisoning, quando conteúdo malicioso é armazenado e servido como legítimo;
+\item \textit{Cache poisoning}, quando conteúdo malicioso é armazenado e servido como legítimo;
 
-\item Persistent malicious scripts, que se mantêm mesmo após correções no servidor;
+\item \textit{Persistent malicious scripts}, que se mantêm mesmo após correções no servidor;
 
-\item Manutenção indevida de dados sensíveis em Cache Storage.
+\item Manutenção indevida de dados sensíveis em \textit{Cache Storage}.
 
 \end{itemize}
 
-Uma aplicação que utilize Service Workers deve assegurar controlos de integridade, escopo restrito e atualização segura \cite{ref9}.
+Uma aplicação que utilize \textit{Service Workers} deve assegurar controlos de integridade, âmbito restrito e atualização segura \cite{ref9}.
 
 \subsubsection{Análise Realizada}
 
-A análise ao código-fonte revelou ausência de qualquer registo ou implementação de Service Workers e de uso explícito da Cache Storage API, tornando este vetor não aplicável ao projeto em análise.
+A análise ao código-fonte revelou ausência de qualquer registo ou implementação de \textit{Service Workers} e de uso explícito da \textit{Cache Storage API}, tornando este vetor não aplicável a este projeto em análise.
 
-Consequentemente, os riscos associados a offline persistence ou manipulação de cache são inexistentes nesta fase.
+Consequentemente, os riscos associados a \textit{offline persistence} ou manipulação de \textit{cache} são inexistentes nesta fase.
 
-\subsection{Vulnerabilidades em Scripts de Terceiros}
+\subsection{Vulnerabilidades em \textit{Scripts} de Terceiros}
 
 \subsubsection{Enquadramento Teórico}
 
-Bibliotecas e frameworks de terceiros são componentes fundamentais no desenvolvimento web, mas também representam uma das principais superfícies de ataque modernas \cite{ref10}.
+Bibliotecas e \textit{frameworks} de terceiros são componentes fundamentais no desenvolvimento web, mas também representam um dos principais meios de ataque modernos \cite{ref10}.
 
-Ataques à cadeia de fornecimento (supply chain attacks) podem ocorrer quando uma dependência legítima é comprometida, afetando todas as aplicações que a utilizam.
+Ataques à cadeia de fornecimento (\textit{supply chain attacks}) podem ocorrer quando uma dependência legítima é comprometida, afetando todas as aplicações que a utilizam.
 
 Outros riscos incluem:
 
@@ -73,7 +73,7 @@ Outros riscos incluem:
 
 \item Inclusão de versões desatualizadas com vulnerabilidades conhecidas (CVE);
 
-\item Hospedagem de scripts em CDNs não confiáveis;
+\item Hospedagem de \textit{scripts} em CDNs não confiáveis;
 
 \item Modificação de dependências por terceiros não autorizados.
 
@@ -89,13 +89,13 @@ Verificou-se que apenas foram incluídas versões oficiais hospedadas em CDNs re
 
 Não foram encontradas bibliotecas desatualizadas ou modificadas, reduzindo significativamente o risco de exploração.
 
-\subsection{Exposição de Tokens ou Chaves API}
+\subsection{Exposição de \textit{Tokens} ou API \textit{keys}}
 
 \subsubsection{Enquadramento Teórico}
 
-A exposição de segredos (como tokens, chaves de API ou credenciais) é uma das falhas mais comuns em aplicações web e representa uma ameaça direta à integridade e confidencialidade do sistema \cite{ref12}.
+A exposição de segredos (como \textit{tokens}, API \textit{keys} ou credenciais) é uma das falhas mais comuns em aplicações web e representa uma ameaça direta à integridade e confidencialidade do sistema \cite{ref12}.
 
-Quando segredos estão embutidos no código-fonte — especialmente no frontend — tornam-se acessíveis a qualquer utilizador que inspecione o código, permitindo:
+Quando segredos estão embutidos no código-fonte — especialmente no \textit{frontend} — tornam-se acessíveis a qualquer utilizador que inspecione o código, permitindo:
 
 \begin{itemize}
 
@@ -111,7 +111,7 @@ A OWASP recomenda a gestão centralizada de segredos, armazenamento seguro no se
 
 \subsubsection{Análise Realizada}
 
-Durante a análise estática do código-fonte (HTML, JavaScript e cabeçalhos HTTP), procuraram-se padrões típicos de exposição de segredos, incluindo termos como apiKey, token, Authorization, e chaves codificadas em Base64.
+Durante a análise estática do código-fonte (HTML, JavaScript e cabeçalhos HTTP), procuraram-se padrões típicos de exposição de segredos, incluindo termos como \textit{apiKey}, \textit{token}, \textit{Authorization}, e chaves codificadas em Base64.
 
 Foram efetuadas pesquisas manuais e automatizadas, incluindo inspeção de ficheiros minificados.
 
@@ -121,4 +121,4 @@ Não foram identificados valores sensíveis embutidos no código, o que demonstr
 
 Embora nenhuma destas vulnerabilidades tenha sido identificada na aplicação analisada, a sua verificação foi essencial para garantir uma abordagem responsável, abrangente e conforme as normas internacionais de segurança.
 
-Os resultados reforçam que, mesmo em ambientes no-code e com integração de IA, é possível seguir metodologias de análise de risco alinhadas com os princípios do OWASP Top 10 (2021) e do NIST Cybersecurity Framework (CSF) \cite{ref2}, \cite{ref4}.
+Os resultados reforçam que, mesmo em ambientes \textit{no-code} e com integração de IA, é possível seguir metodologias de análise de risco alinhadas com os princípios do OWASP Top 10 (2021) e do NIST Cybersecurity Framework (CSF) \cite{ref2}, \cite{ref4}.
