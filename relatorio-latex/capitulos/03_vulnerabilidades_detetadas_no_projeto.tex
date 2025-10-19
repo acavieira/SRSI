@@ -1,0 +1,99 @@
+\section{Vulnerabilidades Detetadas no Projeto}
+
+\subsection{Source Map Exposure}
+
+\subsubsection{Visão geral conceitual}
+
+No desenvolvimento web contemporâneo, os source maps constituem um recurso essencial de depuração, introduzido para conciliar a discrepância entre o código-fonte original e sua forma minificada ou transpilada. Sistemas de build como Webpack, Rollup, Vite e Babel geram estes arquivos auxiliares \texttt{.map} para auxiliar os desenvolvedores a rastrear a execução de volta ao código legível por humanos. Conforme documentado pela Mozilla Developer Network \cite{ref42}, os navegadores utilizam a diretiva  
+
+\begin{verbatim}
+//# sourceMappingURL=main.js.map
+\end{verbatim}
+
+para localizar e interpretar esses mapeamentos dentro das ferramentas de depuração. Este processo é fundamental durante o desenvolvimento, pois permite a inspeção detalhada de aplicações compiladas e facilita a depuração rápida. 
+
+Entretanto, em ambientes de produção, a exposição desses source maps configura um risco significativo de divulgação de informação. O Guia de Testes de Segurança Web da OWASP \cite{ref2} classifica tal exposição na categoria mais ampla de Information Leakage and Improper Error Handling, enfatizando que mesmo dados internos não sensíveis, como nomes de arquivos ou estruturas lógicas, podem capacitar os esforços de reconhecimento de um atacante. Arquivos \texttt{.map} acessíveis publicamente têm a capacidade de revelar a hierarquia de arquivos do projeto e a organização do framework, nomes de funções e variáveis que auxiliam na desofuscação, comentários de desenvolvedores e rastreamentos de depuração, e rotas internas de API, constantes de configuração, ou tokens de autenticação acidentalmente deixados no código. Uma vez recuperados, estes arquivos permitem aos atacantes reconstruir o modelo lógico completo da aplicação web, reduzindo substancialmente a barreira para a engenharia reversa e a descoberta de outras vulnerabilidades, como Cross-Site Scripting ou Insecure Direct Object References. De acordo com o CWE-200 \cite{ref43}, esta exposição se qualifica como Divulgação de Informação Sensível a um Ator Não Autorizado. 
+
+\subsubsection{Contexto teórico e de segurança}
+
+Teoricamente, a exposição de source maps compromete o componente de confidencialidade da tríade CIA (Confidencialidade, Integridade e Disponibilidade) \cite{ref47}. O princípio da confidencialidade dita que os dados internos e os detalhes de implementação devem permanecer acessíveis apenas a pessoal autorizado. Quando artefatos de depuração são recuperáveis publicamente, este princípio é violado, mesmo que o conteúdo exposto não seja imediatamente sensível. 
+
+No âmbito da estrutura de modelagem de ameaças STRIDE \cite{ref44}, esta vulnerabilidade se alinha com a categoria de Divulgação de Informação, cujo objetivo do atacante é extrair conhecimento em vez de manipular dados. É classificado como um ataque passivo, mas que pode servir como facilitador para exploits mais severos. Além disso, o NIST SP 800-53 \cite{ref3} lista informações de depuração residuais como um problema de gerenciamento de configuração nas famílias de controle CM (Configuration Management) e SI (System Integrity). O tratamento inadequado de artefactos de build é considerado uma fraqueza sistêmica que pode corroer a linha de base de segurança de todo o ambiente de implantação. 
+
+\subsubsection{Root Causes}
+
+As principais causas raiz desta vulnerabilidade incluem a Configuração Imprópria de Build, onde desenvolvedores se esquecem de desativar a geração de source maps em produção (por exemplo, utilizando devtool: 'source-map' em vez de false). Outras causas são a Sincronização de Implantação Automatizada, na qual pipelines de integração contínua (CI/CD) ou serviços de hospedagem (CDNs, PaaS) carregam todos os arquivos do diretório de build sem filtragem; a Sobreposição de Ambientes, caracterizada pela falta de separação entre pipelines de staging e produção, levando ao vazamento de artefatos de não produção; e a Concepção Errónea do Desenvolvedor, que assume que os arquivos \texttt{.map} são inofensivos por serem auxiliares e "invisíveis" para utilizadores comuns. Estas causas são essencialmente procedimentais, e não falhas de nível de código, refletindo fraquezas na governança da implantação em vez de na lógica do software. \cite{ref8}
+
+\subsubsection{Estratégias de Mitigação}
+
+Os padrões da indústria prescrevem múltiplas abordagens de mitigação. A primeira é desativar a geração de source maps em builds de produção, o que pode ser feito 
+\begin{itemize}
+\item no Webpack com devtool: false ou hidden-source-map, 
+\item no Vite com build.sourcemap = false, 
+\item no Rollup com sourcemap: false, 
+\end{itemize}
+prevenindo a criação acidental de arquivos \texttt{.map} durante a construção de produção. 
+
+A segunda estratégia é restringir o acesso a nível de servidor ou CDN. Por exemplo, no Nginx, pode-se implementar a regra:  
+
+\begin{verbatim}
+location ~* \.map$ { deny all; return 404; }
+\end{verbatim}
+
+garantindo que, mesmo que os arquivos \texttt{.map} existam, permaneçam inacessíveis. Adicionalmente, é fundamental impor a segregação de ambientes, mantendo pipelines distintas para Desenvolvimento, Homologação (Staging) e Produção, assegurando que os artefatos de depuração permaneçam isolados. Deve-se também conduzir auditorias periódicas de ativos, automatizando a varredura de referências \texttt{.map} por meio de análise estática (como 
+
+\begin{verbatim}
+grep -Rni 'sourceMappingURL' ~/scans/js
+\end{verbatim}
+
+, OWASP ZAP ou Burp Suite), e integrando verificações automatizadas em pipelines de CI/CD para falhar implantações se artefactos \texttt{.map} persistirem. Por fim, a Implementação de controlos de gestão de configuração é necessária. De acordo com o NIST SP 800-160 \cite{ref45}, verificações preventivas de configuração e regras de build seguras devem ser aplicadas em todas as fases do ciclo de vida, priorizando a prevenção sobre a deteção. 
+
+\subsubsection{Metodologia de Teste}
+
+A metodologia utilizada para identificar a possível exposição de source maps no projeto Base44 seguiu uma abordagem de teste de segurança em caixa cinza (grey-box testing), em conformidade com as diretrizes do OWASP WSTG v4.2 \cite{ref8} e as boas práticas do PTES. 
+
+As etapas executadas foram: a Recolha de Informações, que consistiu na análise dos cabeçalhos HTTP, recursos JavaScript e metadados públicos do domínio; a Análise Estática, que envolveu o download de todos os arquivos \texttt{.js} e inspeção com  
+
+\begin{verbatim}
+grep -Rni 'sourceMappingURL' ~/scans/js
+\end{verbatim}
+
+para detetar referências a source maps; a Verificação Manual, que incluiu tentativas de acesso direto aos arquivos indicados (e.g., vendors.b9747405.js.map), verificando o retorno HTTP; as Correlações e Avaliação de Risco, que demandaram a interpretação dos resultados em conformidade com CWE-200 \cite{ref43} e a classificação segundo CVSS 3.1 \cite{ref46}, avaliando o impacto potencial e a probabilidade de exposição futura; e a Documentação e Evidência, que garantiu o armazenamento dos resultados e logs de varredura para documentação de prova, conforme a metodologia PTES - Reporting Phase. É importante notar que essa metodologia foi não intrusiva e seguiu princípios éticos de teste (non-destructive assessment), assegurando a integridade da aplicação durante o processo. 
+
+\subsection{Mixed Content (Violação da Integridade HTTPS)}
+
+\subsubsection{Visão geral conceitual}
+
+A arquitetura de segurança web moderna baseia-se no princípio da integridade da camada de transporte, garantindo que todos os dados trocados entre um utilizador e um servidor web sejam criptografados e autenticados por meio do HTTPS. O HTTPS utiliza o TLS, proporcionando confidencialidade e integridade das comunicações ao proteger contra eavesdropping, manipulação de conteúdo e ataques de falsificação de identidade. \cite{ref48}
+
+Um website é considerado totalmente seguro apenas se todos os seus recursos, incluindo HTML, CSS, JavaScript, imagens, fontes e ativos de terceiros, forem carregados via HTTPS. Quando uma página HTTPS inclui elementos recuperados por conexões HTTP não criptografadas, o navegador identifica isso como conteúdo misto. O W3C define conteúdo misto como “a prática de carregar sub-recursos não seguros (HTTP) dentro de um contexto seguro (HTTPS)”. \cite{ref50}
+
+Duas formas de conteúdo misto são reconhecidas: o Conteúdo Misto Ativo, que são recursos executáveis (scripts, iframes, folhas de estilo, requisições XHR) carregados via HTTP. Estes podem alterar ou controlar diretamente o DOM e, consequentemente, comprometer a segurança integral da página. A segunda forma é o Conteúdo Misto Passivo, que inclui recursos não executáveis (imagens, vídeos, arquivos de áudio) carregados via HTTP. Embora estes não executem código, eles ainda expõem metadados e enfraquecem a percepção de confiança do utilizador na conexão. Ambos os tipos degradam a garantia de segurança de ponta a ponta do HTTPS, anulando efetivamente as proteções oferecidas pelo TLS. Se um atacante conseguir interceptar qualquer requisição HTTP não criptografada, ele pode injetar scripts maliciosos, substituir conteúdo legítimo ou modificar dados em trânsito, subvertendo todo o modelo de segurança. \cite{ref49}
+
+\subsubsection{Contexto Teórico e de Segurança}
+
+Do ponto de vista teórico, o conteúdo misto viola diretamente os pilares de integridade e confidencialidade da tríade CIA. Embora o TLS assegure que sessões criptografadas não possam ser modificadas ou lidas por intermediários, a inclusão de até mesmo um único sub-recurso HTTP quebra esta cadeia de integridade. Atacantes posicionados no caminho da rede, como em Wi-Fi públicos, roteadores comprometidos ou servidores proxy, podem explorar tais fraquezas para injetar ou alterar conteúdo não criptografado, efetivamente degradando a segurança da página inteira. 
+
+A Especificação de Conteúdo Misto do W3C \cite{ref50} estabelece explicitamente que os navegadores devem bloquear conteúdo misto ativo e, opcionalmente, avisar os utilizadores sobre conteúdo misto passivo, visando prevenir a fraude do utilizador e o comprometimento de dados. Este comportamento é imposto por mecanismos de segurança do navegador e pela diretiva upgrade-insecure-requests da CSP, que converte automaticamente requisições de recursos HTTP para HTTPS quando possível. De acordo com o Guia de Boas Práticas de Codificação Segura da OWASP \cite{ref51}, o uso de conteúdo misto “anula a proteção fornecida pelo HTTPS e permite que atacantes adulterem ou observem comunicações que os utilizadores acreditam ser seguras”. O NIST \cite{ref8} classifica ainda os riscos de conteúdo misto sob os controles SA-8 e SC-8 (Transmission Confidentiality and Integrity), exigindo que as organizações mantenham consistência criptográfica em todos os canais de dados. 
+
+Na prática, a exploração de conteúdo misto pode ocorrer em dois cenários primários: por Injeção Man-in-the-Middle, onde um atacante intercepta o tráfego HTTP não seguro e modifica recursos (por exemplo, injetando JavaScript num script ou imagem de conteúdo misto), ou por Exploração de Downgrade ou Falha de Caminho, onde uma atacante força a desclassificação e manipula respostas se a aplicação permitir o fallback dinâmico para HTTP. 
+
+\subsubsection{Root Causes}
+
+Fontes comuns de vulnerabilidades de conteúdo misto incluem Dependências Legadas, ou seja, bibliotecas antigas ou recursos externos (CDNs, análise, imagens) com URLs http:// codificadas. Outras causas são a Má Configuração do Ambiente de Build, em que os pipelines de construção falham ao impor a reescrita para HTTPS durante a compilação ou minificação; o Linkagem de Recursos Externos, onde scripts de terceiros ou redes de publicidade não utilizam protocolos seguros; e a Migração Parcial para HTTPS, quando sites são atualizados de HTTP para HTTPS sem uma atualização abrangente dos links. Estas questões frequentemente persistem devido à complexidade da gestão de dependências nos ecossistemas modernos de JavaScript e à pouca visibilidade sobre os recursos de fornecedores empacotados. \cite{ref49}
+
+\subsubsection{Estratégias de Mitigação}
+
+Padrões e melhores práticas da indústria propõem múltiplas contramedidas para eliminar o conteúdo misto. A primeira é a Aplicação Total de HTTPS, que implica garantir que todos os recursos internos e externos sejam acessíveis via HTTPS e configurar o HTTP Strict Transport Security com o cabeçalho Strict-Transport-Security para impor o acesso exclusivo via HTTPS. A CSP deve ser utilizada, empregando a diretiva upgrade-insecure-requests para converter automaticamente quaisquer chamadas de recursos http:// para https://, e incluindo block-all-mixed-content para evitar o carregamento inseguro de ativos legados. A Gestão de Dependências requer a auditoria regular de bibliotecas de terceiros, garantindo que elas referenciem apenas endpoints seguros, e observando que ferramentas de build modernas podem reescrever automaticamente referências de URL durante o processo de construção. Redirecionamentos e Reescritas do Lado do Servidor são cruciais para impor HTTPS no nível do servidor web ou CDN, redirecionando todas as requisições HTTP para seus equivalentes HTTPS. Por fim, o Monitoramento Contínuo deve ser empregado através de scanners automatizados (como OWASP ZAP ou Mozilla Observatory) para detectar violações de conteúdo misto em builds de produção. \cite{ref52}
+
+Cada uma destas mitigações está em alinhamento com os controles do NIST SP 800-53 Rev. 5 sobre a integridade da transmissão e com o OWASP A08:2021 – Software and Data Integrity Failures, que engloba a proteção de transporte inadequada.
+
+\subsubsection{Metodologia de Teste}
+
+A metodologia de deteção de Mixed Content seguiu o modelo de teste de segurança em caixa cinza (grey-box testing), conforme os padrões OWASP WSTG v4.2 e PTES \cite{ref1}. 
+
+As etapas executadas incluíram a Coleta de Informações, através do comando \textit{curl -I} e inspeção das respostas HTTP para verificar o uso de HTTPS nas requisições principais e secundárias; a Análise de Scripts e Recursos, que consistiu na extração de arquivos JavaScript e na busca por cadeias http:// utilizando expressões regulares 
+\begin{verbatim}
+grep -Rni "http://" ~/scans/js; 
+\end{verbatim}
+a Validação de Recursos, por meio de testes com navegadores em modo desenvolvedor para identificar requisições bloqueadas como conteúdo misto; a Classificação de Severidade, que envolveu a avaliação do impacto com base em critérios do CVSS 3.1 \cite{ref46} e a categorização segundo OWASP A08:2021; e a Documentação, que garantiu o registro dos resultados, evidências e URLs vulneráveis, com identificação dos recursos afetados e das dependências inseguras. Este teste foi conduzido de forma não intrusiva, não alterando o comportamento da aplicação e respeitando as políticas éticas de penetration testing.
