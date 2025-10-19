@@ -1,0 +1,28 @@
+# Arquivos temporários de compilação
+*.aux
+*.bbl
+*.blg
+*.log
+*.toc
+*.out
+*.lof
+*.lot
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+
+# Arquivos PDF e DVI gerados
+*.pdf
+*.dvi
+
+# Arquivos de backup do editor
+*~
+*.swp
+*.bak
+
+# Arquivos do vim e vscode
+.vim
+.vscode/
+
+# Diretórios de compilação
+_build/
