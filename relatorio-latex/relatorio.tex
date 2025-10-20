@@ -30,7 +30,7 @@
 \usepackage[portuguese]{babel}
 \usepackage{pdfpages} % incluir ficheiros PDF - para a capa
 \usepackage{indentfirst} % identar a primeira linha
-\usepackage[nottoc,numbib]{tocbibind} % referencias aparecerem no indice
+\usepackage[]{tocbibind} % referencias aparecerem no indice
 \usepackage{url}
 
 \usepackage{geometry}
@@ -66,7 +66,10 @@
 
 \listoffigures
 
-% CAPITULOS
+%% GLOSSARIO
+\include{glossario/glossario}
+
+%% CAPITULOS
 
 \include{capitulos/01_introducao}
 
@@ -78,7 +81,7 @@
 
 \include{capitulos/06_questoes_conhecidas_reportadas_nivel_lataforma}
 
-% BIBLIOGRAFIA
+%% BIBLIOGRAFIA
 
 \bibliography{bibliografia/biblio}{}
 \bibliographystyle{IEEEtran}
