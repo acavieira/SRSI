@@ -7,7 +7,7 @@
 \subsubsection{Visão geral conceitual}
 \label{subsubsec:visao-geral-SME}
 
-No desenvolvimento web contemporâneo, os source maps constituem um recurso essencial de depuração, introduzido para conciliar a discrepância entre o código-fonte original e sua forma minificada ou transpilada. Sistemas de build como Webpack, Rollup, Vite e Babel geram estes arquivos auxiliares \texttt{.map} para auxiliar os desenvolvedores a rastrear a execução de volta ao código legível por humanos. Conforme documentado pela Mozilla Developer Network \cite{ref42}, os navegadores utilizam a diretiva  
+No desenvolvimento web contemporâneo, os source maps constituem um recurso essencial de depuração, introduzido para conciliar a discrepância entre o código-fonte original e sua forma minificada ou transpilada. Sistemas de build como Webpack, Rollup, Vite e Babel geram estes arquivos auxiliares \texttt{.map} para auxiliar os programadores a rastrear a execução de volta ao código legível por humanos. Conforme documentado pela Mozilla Developer Network \cite{ref42}, os navegadores utilizam a diretiva  
 
 \begin{verbatim}
 //# sourceMappingURL=main.js.map
@@ -15,7 +15,7 @@ No desenvolvimento web contemporâneo, os source maps constituem um recurso esse
 
 para localizar e interpretar esses mapeamentos dentro das ferramentas de depuração. Este processo é fundamental durante o desenvolvimento, pois permite a inspeção detalhada de aplicações compiladas e facilita a depuração rápida. 
 
-Entretanto, em ambientes de produção, a exposição desses source maps configura um risco significativo de divulgação de informação. O Guia de Testes de Segurança Web da OWASP \cite{ref2} classifica tal exposição na categoria mais ampla de Information Leakage and Improper Error Handling, enfatizando que mesmo dados internos não sensíveis, como nomes de arquivos ou estruturas lógicas, podem capacitar os esforços de reconhecimento de um atacante. Arquivos \texttt{.map} acessíveis publicamente têm a capacidade de revelar a hierarquia de arquivos do projeto e a organização do framework, nomes de funções e variáveis que auxiliam na desofuscação, comentários de desenvolvedores e rastreamentos de depuração, e rotas internas de API, constantes de configuração, ou tokens de autenticação acidentalmente deixados no código. Uma vez recuperados, estes arquivos permitem aos atacantes reconstruir o modelo lógico completo da aplicação web, reduzindo substancialmente a barreira para a engenharia reversa e a descoberta de outras vulnerabilidades, como Cross-Site Scripting ou Insecure Direct Object References. De acordo com o CWE-200 \cite{ref43}, esta exposição se qualifica como Divulgação de Informação Sensível a um Ator Não Autorizado. 
+Entretanto, em ambientes de produção, a exposição desses source maps configura um risco significativo de divulgação de informação. O Guia de Testes de Segurança Web da OWASP \cite{ref2} classifica tal exposição na categoria mais ampla de Information Leakage and Improper Error Handling, enfatizando que mesmo dados internos não sensíveis, como nomes de arquivos ou estruturas lógicas, podem capacitar os esforços de reconhecimento de um atacante. Arquivos \texttt{.map} acessíveis publicamente têm a capacidade de revelar a hierarquia de arquivos do projeto e a organização do framework, nomes de funções e variáveis que auxiliam na desofuscação, comentários de programadores e rastreamentos de depuração, e rotas internas de API, constantes de configuração, ou tokens de autenticação acidentalmente deixados no código. Uma vez recuperados, estes arquivos permitem aos atacantes reconstruir o modelo lógico completo da aplicação web, reduzindo substancialmente a barreira para a engenharia reversa e a descoberta de outras vulnerabilidades, como Cross-Site Scripting ou Insecure Direct Object References. De acordo com o CWE-200 \cite{ref43}, esta exposição se qualifica como Divulgação de Informação Sensível a um Ator Não Autorizado. 
 
 \subsubsection{Contexto teórico e de segurança}
 \label{subsubsec:contexto-teorico-SME}
@@ -27,7 +27,7 @@ No âmbito da estrutura de modelagem de ameaças STRIDE \cite{ref44}, esta vulne
 \subsubsection{Root Causes}
 \label{subsubsec:root-causes-SME}
 
-As principais causas raiz desta vulnerabilidade incluem a Configuração Imprópria de Build, onde desenvolvedores se esquecem de desativar a geração de source maps em produção (por exemplo, utilizando devtool: 'source-map' em vez de false). Outras causas são a Sincronização de Implantação Automatizada, na qual pipelines de integração contínua (CI/CD) ou serviços de hospedagem (CDNs, PaaS) carregam todos os arquivos do diretório de build sem filtragem; a Sobreposição de Ambientes, caracterizada pela falta de separação entre pipelines de staging e produção, levando ao vazamento de artefatos de não produção; e a Concepção Errónea do Desenvolvedor, que assume que os arquivos \texttt{.map} são inofensivos por serem auxiliares e "invisíveis" para utilizadores comuns. Estas causas são essencialmente procedimentais, e não falhas de nível de código, refletindo fraquezas na governança da implantação em vez de na lógica do software. \cite{ref8}
+As principais causas raiz desta vulnerabilidade incluem a Configuração Imprópria de Build, onde programadores se esquecem de desativar a geração de source maps em produção (por exemplo, utilizando devtool: 'source-map' em vez de false). Outras causas são a Sincronização de Implantação Automatizada, na qual pipelines de integração contínua (CI/CD) ou serviços de hospedagem (CDNs, PaaS) carregam todos os arquivos do diretório de build sem filtragem; a Sobreposição de Ambientes, caracterizada pela falta de separação entre pipelines de staging e produção, levando ao vazamento de artefatos de não produção; e a Concepção Errónea do Programador, que assume que os arquivos \texttt{.map} são inofensivos por serem auxiliares e "invisíveis" para utilizadores comuns. Estas causas são essencialmente procedimentais, e não falhas de nível de código, refletindo fraquezas na governança da implantação em vez de na lógica do software. \cite{ref8}
 
 \subsubsection{Estratégias de Mitigação}
 \label{subsubsec:mitigacao-SME}
@@ -142,7 +142,7 @@ Esta vulnerabilidade é particularmente difícil de detetar, pois não envolve c
 \subsubsection{Boas práticas de prevenção}
 \label{subsubsec:boas-praticas-prevencao-dom-xss}
 
-A mitigação eficaz de DOM-based XSS deve ser integrada desde a fase de arquitetura até ao ciclo de desenvolvimento. Algumas estratégias recomendadas incluem \cite{ref31}, \cite{ref32}:
+A mitigação eficaz de DOM-based XSS deve ser integrada desde a fase de arquitetura até ao ciclo de desenvolvimento. Algumas estratégias recomendadas incluem \cite{ref31, ref32}:
 
 \begin{itemize}
     \item \textbf{Uso de APIs seguras} em que são preferíveis métodos como \texttt{textContent}, \texttt{setAttribute} (com validação), \texttt{value} para campos de formulário, e \texttt{createElement} com \texttt{appendChild}, em vez de \texttt{innerHTML} ou \texttt{eval}.
@@ -161,7 +161,7 @@ A mitigação eficaz de DOM-based XSS deve ser integrada desde a fase de arquite
 \subsubsection{Metodologias de teste}
 \label{subsubsec:metodologias-teste-dom-xss}
 
-A identificação de vulnerabilidades DOM-based XSS requer uma combinação de técnicas manuais e automáticas como \cite{ref29}, \cite{ref33}:
+A identificação de vulnerabilidades DOM-based XSS requer uma combinação de técnicas manuais e automáticas como \cite{ref29, ref33}:
 
 \begin{enumerate}
     \item \textbf{Mapeamento de fontes e sinks} em que se identifica onde os dados entram na aplicação (ex.: \texttt{location.search}, \texttt{postMessage}, inputs do utilizador) e onde são inseridos no DOM (ex.: \texttt{innerHTML}, \texttt{eval}, \texttt{insertAdjacentHTML}).
