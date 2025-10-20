@@ -8,7 +8,7 @@ A investigação, conduzida sob uma abordagem de testes de penetração do tipo 
 
 \paragraph{Validade da Abordagem}
 A metodologia de caixa-cinzenta provou ser a mais adequada para este contexto de desenvolvimento \textit{no-code}.
-Ao focar-se no código acessível do \textit{frontend}, foi possível aplicar técnicas de análise sobre os recursos disponíveis ao lado do cliente,
+Ao focar-se no código acessível do \textit{frontend}, foi possível aplicar técnicas de análise sobre os recursos disponíveis do lado do cliente,
 superando as limitações impostas pela natureza da plataforma Base44.
 
 \paragraph{Descobertas e Conformidade}
@@ -25,7 +25,7 @@ o que limita a capacidade de \textit{hardening} e mitigação de vulnerabilidade
 \paragraph{Riscos de Exposição de Informação}
 Foi identificada a exposição potencial de ficheiros \textit{.map} (\textit{Source Maps}), que, apesar de terem retornado um código 404,
 permanecem referenciados nos \textit{scripts} minificados.
-Esta situação alinha-se com relatórios de outros utilizadores da plataforma \cite{ref22} e representa um risco de fuga de informação (OWASP A05:2021) \cite{ref21},
+Esta situação alinha-se com relatórios de outros utilizadores da plataforma \cite{ref22} e representa um risco de fuga de informação (OWASP A05:2021) \cite{ref2},
 caso a política de bloqueio da plataforma falhe num futuro \textit{deploy}.
 
 \paragraph{Impacto do \textit{Caching} Persistente}
