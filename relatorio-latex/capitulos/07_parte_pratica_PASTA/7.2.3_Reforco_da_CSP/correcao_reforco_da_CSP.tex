@@ -10,7 +10,7 @@ A política final implementada encontra-se abaixo:
     \centering
     \includegraphics[width=0.95\textwidth]{capitulos/07_parte_pratica_PASTA/7.2.3_Reforco_da_CSP/img/correcao1.png}
     \caption{Politica final implementada de Content-Security-Policy}
-    \label{fig:codigo-vulneravel}
+    \label{fig:figuracorrecaoCSP}
 \end{figure}
 
 Esta política define regras claras sobre os conteúdos que a aplicação pode carregar. Os scripts e os estilos passam a vir apenas da própria aplicação ou de ligações HTTPS seguras. Os conteúdos incorporados através de \texttt{object-src} deixam de ser permitidos, evitando o uso de ficheiros ou plugins que possam representar um risco. As imagens ficam limitadas a origens consideradas seguras e controladas. Para além disso, todos os pedidos de rede passam a ser feitos através de ligações seguras, reduzindo a probabilidade de interferências externas.
