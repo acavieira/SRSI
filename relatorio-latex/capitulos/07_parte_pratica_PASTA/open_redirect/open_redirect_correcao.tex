@@ -1,0 +1,32 @@
+\subsubsection{Correção da Vulnerabilidade de Open Redirect}
+
+Durante a análise do fluxo de autenticação verificou-se que a aplicação utilizava a expressão:
+
+\begin{verbatim}
+User.loginWithRedirect(window.location.href)
+\end{verbatim}
+
+A utilização de \texttt{window.location.href} representa um risco, pois o URL completo pode ser manipulado pelo utilizador antes do processo de autenticação. Por exemplo, um atacante pode adicionar parâmetros como:
+
+\begin{verbatim}
+/add-today?redirect=https://malicious.com
+\end{verbatim}
+
+Caso o código confie no URL completo, existe a possibilidade de provocar um \textit{open redirect}, levando o utilizador a um domínio externo após o login.
+
+Para eliminar este risco, o código foi modificado para usar apenas o caminho interno da aplicação:
+
+\begin{verbatim}
+User.loginWithRedirect(window.location.pathname)
+\end{verbatim}
+
+As alterações realizadas no código-fonte podem ser visualizadas na Figura \ref{fig:github_open_redirect}.
+
+\begin{figure}[hbtp]
+    \centering
+    \includegraphics[width=0.95\textwidth]{capitulos/07_parte_pratica_PASTA/open_redirect/img/open_redirect_github.png}
+    \caption{Diff do GitHub mostrando a correção do Open Redirect}
+    \label{fig:github_open_redirect}
+\end{figure}
+
+O \texttt{pathname} contém apenas a rota interna e ignora completamente domínios externos, parâmetros e fragmentos adicionados manualmente. Assim, qualquer tentativa de manipulação externa desaparece no momento da construção do URL de redirecionamento. Desta forma, elimina-se o vetor de ataque e garante-se que o redirecionamento ocorre sempre apenas dentro da própria aplicação.

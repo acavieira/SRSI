@@ -1,0 +1,46 @@
+\subsection{Validação da Correção em Ambiente de Desenvolvimento}
+
+Para confirmar a eficácia da correção, foi utilizado um mock do sistema de autenticação Base44 em ambiente de desenvolvimento. O objetivo foi observar diretamente qual URL a aplicação envia para a função \texttt{loginWithRedirect()} após a alteração implementada.
+
+Primeiro, configurou-se o mock para simular o estado ``não autenticado'' na primeira execução. Isto obriga a aplicação a invocar o redirecionamento, permitindo inspecionar o valor utilizado.
+
+\begin{verbatim}
+throw new Error("Mock unauthenticated");
+\end{verbatim}
+
+Após gerar o erro intencional, a aplicação chama:
+
+\begin{verbatim}
+loginWithRedirect(window.location.pathname)
+\end{verbatim}
+
+O mock regista no console o valor recebido e, em seguida, executa um redirecionamento real com esse valor. Isto torna possível confirmar se a aplicação utiliza realmente apenas caminhos internos.
+
+Foram testados dois cenários:
+
+\begin{itemize}
+    \item acesso normal à aplicação (por exemplo, \texttt{/add-today});
+    \item tentativa de ataque usando parâmetros maliciosos:
+    \begin{verbatim}
+/add-today?redirect=https://malicious.com
+    \end{verbatim}
+\end{itemize}
+
+Em ambos os casos, o comportamento observado foi o mesmo: o mock registou sempre apenas o valor interno:
+
+\begin{verbatim}
+/add-today
+\end{verbatim}
+
+A evidência deste comportamento no console do navegador é apresentada na Figura \ref{fig:devtools_open_redirect}.
+
+\begin{figure}[hbtp]
+    \centering
+    \includegraphics[width=0.95\textwidth]{capitulos/07_parte_pratica_PASTA/open_redirect/img/open_redirect_devtools.png}
+    \caption{Validação da correção via Developer Tools}
+    \label{fig:devtools_open_redirect}
+\end{figure}
+
+Os parâmetros externos, incluindo URLs maliciosas, não foram utilizados no processo de redirecionamento. Isto confirma que, após a correção, o valor completo do URL deixa de ser relevante e qualquer manipulação feita pelo utilizador é ignorada automaticamente pela lógica da aplicação.
+
+Assim, conclui-se que a vulnerabilidade de \textit{open redirect} foi eliminada com sucesso.
