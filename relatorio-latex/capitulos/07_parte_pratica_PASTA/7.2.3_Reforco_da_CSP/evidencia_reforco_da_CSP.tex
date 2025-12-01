@@ -1,0 +1,51 @@
+\subsubsection{Validação da Eficácia da CSP}
+
+Para validar a eficácia da \emph{Content-Security-Policy} (CSP), simulámos tentativas reais de injeção de scripts externos e carregamento de conteúdos potencialmente perigosos. Para isso, utilizámos o DevTools do navegador e executámos os seguintes testes:
+
+\begin{enumerate}
+    \item \textbf{Tentativa de injeção de um script externo:} 
+    Este teste teve como objetivo verificar se a CSP integrada impede o carregamento de scripts provenientes de origens não autorizadas, uma técnica comum em ataques XSS. Para isso, foi criado dinamicamente, através da consola do navegador, um elemento \texttt{<script>} cujo \texttt{src} apontava para um domínio malicioso. 
+    Ao tentar introduzir o script na página, o navegador bloqueou de imediato a ação e apresentou uma mensagem de violação da política, indicando que a diretiva \texttt{script-src} estava a ser aplicada corretamente. 
+    Este comportamento confirma que a aplicação deixou de permitir a execução de scripts externos, reduzindo significativamente o risco de injeção de código malicioso.
+    
+    \begin{figure}[hbtp]
+        \centering
+        \includegraphics[width=0.95\textwidth]{capitulos/07_parte_pratica_PASTA/7.2.3_Reforco_da_CSP/img/evidencia1.png}
+        \caption{Violação da Content-Security-Policy}
+        \label{fig:codigo-vulneravel}
+    \end{figure}
+
+    \item \textbf{Tentativa de carregar um objeto potencialmente inseguro:} 
+    Neste teste procurou-se validar se a diretiva \texttt{object-src 'none'} da CSP estava a impedir o carregamento de conteúdos incorporados, como ficheiros \texttt{.swf} ou outros objetos externos historicamente associados a vulnerabilidades. 
+    Utilizou-se um elemento \texttt{<object>} apontado para um ficheiro remoto suspeito, inserido diretamente na consola. 
+    Tal como esperado, o navegador bloqueou o carregamento e emitiu um aviso explícito de que a ação violava a política de segurança definida. 
+    Este resultado demonstra que a aplicação está protegida contra a execução de objetos inseguros, reforçando o controlo sobre conteúdos que possam representar um risco adicional.
+    
+    \begin{figure}[hbtp]
+        \centering
+        \includegraphics[width=0.95\textwidth]{capitulos/07_parte_pratica_PASTA/7.2.3_Reforco_da_CSP/img/evidencia2.png}
+        \caption{Executar código inline não autorizado}
+        \label{fig:codigo-vulneravel}
+    \end{figure}
+
+    \begin{figure}[hbtp]
+        \centering
+        \includegraphics[width=0.95\textwidth]{capitulos/07_parte_pratica_PASTA/7.2.3_Reforco_da_CSP/img/evidencia3.png}
+        \caption{Resultado de código inline não autorizado}
+        \label{fig:codigo-vulneravel}
+    \end{figure}
+
+    \item \textbf{Tentativa de executar código inline não autorizado:} 
+    O objetivo deste teste foi confirmar que a política de segurança também impede a execução de código inline, como acontece com o uso de \texttt{eval()}, frequentemente explorado em cenários de XSS. 
+    Ao tentar executar \texttt{eval("alert('XSS')")} na consola, o navegador recusou a ação e apresentou uma mensagem indicando que a política não permite a avaliação de strings como JavaScript. 
+    O facto de o alerta não ter sido exibido demonstra que a CSP está a impedir corretamente a execução de código dinâmico não autorizado, garantindo maior robustez contra ataques que dependem da manipulação do DOM.
+    
+    \begin{figure}[hbtp]
+        \centering
+        \includegraphics[width=0.95\textwidth]{capitulos/07_parte_pratica_PASTA/7.2.3_Reforco_da_CSP/img/evidencia4.png}
+        \caption{Unsafe eval bloquedo pelo CSP}
+        \label{fig:codigo-vulneravel}
+    \end{figure}
+\end{enumerate}
+
+Podemos assim concluir que a integração da Content-Security-Policy reforçou de forma significativa a segurança do frontend, introduzindo uma camada de proteção que a aplicação não possuía. A política definida reduz a superfície de ataque ao controlar as origens permitidas para scripts, estilos, imagens e objetos incorporados, mitigando riscos associados a XSS e outras execuções de código não autorizadas no navegador. Os testes demonstraram que todas as tentativas de carregar conteúdo externo ou executar código inline foram bloqueadas, confirmando a eficácia da solução. Em conjunto, esta intervenção tornou o comportamento da aplicação mais seguro e alinhado com as boas práticas de proteção no lado do cliente.
