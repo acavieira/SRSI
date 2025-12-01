@@ -236,3 +236,38 @@ A deteção de \textit{open redirects} pode ser realizada através de:
     
     \item \textbf{Precauções durante testes}: é fundamental evitar redirecionamentos para domínios maliciosos, utilizando marcadores inócuos e documentando os passos de reprodução \cite{ref40}.
 \end{itemize}
+
+% reverse-tabnabbing %
+
+\subsection{Ligações Externas Inseguras (Reverse Tabnabbing)}
+\label{subsec:reverse-tabnabbing}
+
+A vulnerabilidade de \textit{Reverse Tabnabbing} (ou \textit{Unsafe External Link}) ocorre quando uma aplicação web permite a abertura de uma nova aba ou janela do navegador (geralmente através de links com o atributo \texttt{target="\_blank"}) sem revogar o acesso da nova página à página de origem. Esta falha permite que a página de destino, caso seja maliciosa ou tenha sido comprometida, manipule a página original através do objeto JavaScript \texttt{window.opener}. Embora pareça uma funcionalidade inócua de navegação, a persistência da ligação entre a aba pai (origem) e a aba filha (destino) cria um vetor de ataque que viola o isolamento esperado entre contextos de navegação distintos.
+
+Durante a revisão do código-fonte da aplicação desenvolvida na plataforma Base44, foi identificada a presença de âncoras HTML (\texttt{<a>}) configuradas para abrir links externos em novas abas, mas desprovidas dos atributos de segurança necessários. A ausência de instruções explícitas para o navegador cortar a referência ao \texttt{opener} sugere que o sistema expõe os utilizadores ao risco de manipulação da sessão original.
+
+\subsubsection{Riscos e implicações}
+\label{subsubsec:riscos-implicacoes-reverse-tabnabbing}
+
+O risco principal associado ao \textit{Reverse Tabnabbing} reside na facilidade com que um atacante pode conduzir ataques de \textit{Phishing} altamente persuasivos. Ao clicar num link externo, o utilizador é levado para uma nova aba. Enquanto a atenção do utilizador está nessa nova página, um script malicioso pode utilizar \texttt{window.opener.location} para redirecionar silenciosamente a aba original (a aplicação Base44) para uma página falsa de login.
+
+Quando o utilizador fecha a aba externa e retorna à aplicação original, depara-se com a página falsa e, assumindo que a sua sessão expirou, insere novamente as suas credenciais. Diferente do XSS, este ataque não requer a execução de scripts no domínio da vítima, mas abusa da confiança que o utilizador deposita na aba que permaneceu aberta em segundo plano.
+
+
+\subsubsection{Estratégias de mitigação}
+\label{subsubsec:estrategias-mitigacao-reverse-tabnabbing}
+
+A mitigação desta vulnerabilidade é direta e baseia-se na restrição de privilégios da nova aba sobre a janela de origem. A abordagem \textit{standard} e mais eficaz consiste na adição do atributo \texttt{rel="noopener noreferrer"} a todos os links que utilizem \texttt{target="\_blank"}.
+
+A diretiva \texttt{noopener} instrui o navegador a definir o objeto \texttt{window.opener} como \texttt{null} na nova aba, eliminando a via de comunicação entre as páginas. Adicionalmente, \texttt{noreferrer} impede o envio do cabeçalho \textit{Referer}, aumentando a privacidade do utilizador.
+
+Em cenários onde a abertura da janela é feita via JavaScript (ex.: \texttt{window.open}), deve-se garantir que a referência ao \texttt{opener} é nulificada imediatamente após a abertura da janela, ou utilizar funcionalidades modernas dos navegadores que aplicam este isolamento por defeito em contextos específicos.
+
+\subsubsection{Metodologia de Teste}
+\label{subsubsec:metodologia-teste-reverse-tabnabbing}
+
+A deteção de links externos inseguros pode ser realizada eficazmente através de análise estática do código (SAST) e revisão manual. A nível de código, a metodologia consiste em pesquisar por todas as ocorrências de \texttt{target="\_blank"} e verificar se estas são acompanhadas pelo atributo \texttt{rel} com os valores adequados.
+
+Comandos de pesquisa como \texttt{grep} ou ferramentas de \textit{linting} configuradas com regras de segurança (ex.: \texttt{eslint-plugin-security}) são capazes de automatizar esta verificação.
+
+Para a validação dinâmica (testes manuais), o auditor deve clicar no link externo, abrir a consola de desenvolvimento na nova aba carregada e inspecionar o valor de \texttt{window.opener}. Se o objeto retornar uma referência válida para a janela pai em vez de \texttt{null}, confirma-se a vulnerabilidade.
