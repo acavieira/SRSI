@@ -1,0 +1,25 @@
+\paragraph{Validação das Correções}
+
+\noindent\textbf{Cenário Vulnerável (Antes da Correção)}
+
+Quando os source maps estão ativos, as ferramentas de desenvolvimento do navegador conseguem reconstruir e exibir a estrutura completa dos ficheiros de origem. Conforme visível na figura~\ref{fig:source-tabs-enabled}, é possível inspecionar nomes de componentes, a lógica interna das funções e até comentários deixados pelos programadores, revelando detalhes desnecessários em produção que facilitam a engenharia inversa.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.6\textwidth]{capitulos/07_parte_pratica_PASTA/source_tabs_disabling_PASTA/img/source_tabs_enabled.png}
+  \caption{Inspeção com source maps ativados — código de origem reconstruído (antes da correção).}
+  \label{fig:source-tabs-enabled}
+\end{figure}
+
+\noindent\textbf{Cenário Mitigado (Após a Correção)}
+
+Após a alteração da configuração para \texttt{sourcemap: false} e a recompilação do projeto, a inspeção aos recursos carregados mostra apenas uma lista reduzida de ativos agrupados (bundled assets). O código original deixa de estar exposto, sendo apresentado apenas na sua forma minificada e ofuscada. Esta medida oculta a lógica interna, dificultando significativamente a análise por parte de terceiros ou de software de prospeção (scraping). A figura~\ref{fig:source-tabs-disabled} mostra o resultado observado após a correção.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.6\textwidth]{capitulos/07_parte_pratica_PASTA/source_tabs_disabling_PASTA/img/source_tabs_disabled.png}
+  \caption{Inspeção com source maps desativados — ativos minificados/ofuscados (após a correção).}
+  \label{fig:source-tabs-disabled}
+\end{figure}
+
+\noindent Em ambos os cenários, as capturas foram obtidas através das ferramentas de desenvolvimento do navegador (DevTools). A correção reduz o ruído de informação disponível em produção e aumenta a dificuldade de engenharia inversa, sem afetar o desenvolvimento local, onde os source maps podem continuar a ser gerados.
