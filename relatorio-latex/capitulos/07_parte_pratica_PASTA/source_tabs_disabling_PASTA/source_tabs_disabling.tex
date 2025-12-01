@@ -1,0 +1,21 @@
+\subsubsection{Desativação de source maps em produção}
+
+A mitigação desta vulnerabilidade focou-se na alteração das configurações de construção (build) da aplicação para o ambiente de produção. Embora os source maps sejam ferramentas fundamentais durante a fase de desenvolvimento — permitindo rastrear erros até aos ficheiros originais — a sua presença em produção não acrescenta valor funcional ao utilizador final e expõe desnecessariamente a estrutura interna do código.
+
+A disponibilização destes ficheiros permitiria a qualquer utilizador, através das ferramentas de desenvolvimento do navegador (DevTools), aceder ao código não minificado, incluindo nomes de componentes, lógica de funções e comentários deixados pelos programadores.
+
+Para corrigir esta falha, a configuração do bundler Vite foi ajustada para impedir a geração destes ficheiros na versão final. A alteração foi realizada no ficheiro \texttt{vite.config.js}, definindo explicitamente a propriedade \texttt{sourcemap} como \texttt{false} no objeto de configuração de \texttt{build}.
+
+A implementação técnica é apresentada abaixo:
+
+\begin{verbatim}
+// vite.config.js
+export default defineConfig({
+  // ... outras configurações
+  build: {
+    sourcemap: false, // Desativa a geração de source maps em produção
+  },
+});
+\end{verbatim}
+
+Com esta alteração, o processo de compilação (\texttt{npm run build}) gera apenas os ativos minificados essenciais, mantendo o código-fonte original oculto. Esta medida reduz a superfície de reconhecimento para potenciais atacantes, sem afetar a funcionalidade da aplicação ou o processo de desenvolvimento local, onde os mapas continuam disponíveis.
