@@ -72,6 +72,96 @@ A metodologia seguiu uma sequência estruturada de fases, combinando técnicas d
     \textbf{Ferramentas utilizadas:} Qualys SSL Labs.
 \end{enumerate}
 
+\subsection{Relatório de Vulnerabilidades}
+
+A Tabela \ref{tab:vuln} descreve todas as vulnerabilidades para as quais a aplicação foi testada e os respectivos resultados.
+
+\begin{table}[H]
+    \caption{Relatório de Vulnerabilidades}
+    \label{tab:vuln}
+    \centering
+    \begin{tabularx}{\textwidth}{@{} >{\bfseries}p{4.5cm} >{\RaggedRight}X p{3cm} @{}}
+        \toprule
+        Vulnerabilidade & Como foi testada & Detectada? \\
+        \midrule
+        
+        1. SQL Injection (SQLi) & 
+        Testes com sqlmap sobre parâmetros GET, incluindo diferentes níveis, riscos e delays. & 
+        Não detectada \\
+        \addlinespace
+        
+        2. CORS Misconfiguration & 
+        Pedidos curl com Origin manipulada; comparação de comportamentos em IP e domínio. & 
+        Não detectada \\
+        \addlinespace
+        
+        3. Exposição de Source Maps & 
+        Teste directo com curl para obter .js.map, pesquisa de sourceMappingURL nos bundles. & 
+        Parcial \\
+        \addlinespace
+        
+        4. Exposição de Segredos / API Keys & 
+        grep sobre JS para tokens, chaves, endpoints internos. & 
+        Não detectada \\
+        \addlinespace
+        
+        5. Mixed Content & 
+        grep buscou referências http:// nos JS bundles. & 
+        Parcial \\
+        \addlinespace
+        
+        6. DOM-based XSS & 
+        Procura em JS (grep) por usos de innerHTML, eval, insertAdjacentHTML. & 
+        Possível \\
+        \addlinespace
+        
+        7. Open Redirect & 
+        Pesquisa de padrões location.href = ... redirect/url em JS. & 
+        Detectada \\
+        \addlinespace
+        
+        8. TLS Vulnerabilidades & 
+        Avaliação completa via SSL Labs (Heartbleed, SWEET32, ROBOT, etc.). & 
+        Não detectada \\
+        \addlinespace
+        
+        9. Weak Cipher Suites & 
+        Results do SSL Labs (TLS 1.0 / 1.1). & 
+        Não detectada \\
+        \addlinespace
+        
+        10. Headers de Segurança Ausentes & 
+        curl -I analisando X-Frame-Options, Referrer-Policy, etc. & 
+        Maioria presente \\
+        \addlinespace
+        
+        11. SSRF via Host Header & 
+        Tentativas de usar a app como proxy com curl -x. & 
+        Não detectada \\
+        \addlinespace
+        
+        12. Directory Enumeration & 
+        ffuf e Gobuster. & 
+        Não detectada \\
+        \addlinespace
+        
+        13. Insecure Third-Party Scripts & 
+        Análise das referências nos JS bundles (Rewardful, tracking scripts). & 
+        Não detectada \\
+        \addlinespace
+        
+        14. Tab-nabbing & 
+        Busca manual de \texttt{<a target="\_blank">} sem \texttt{rel="noopener"}. & 
+        Detectada \\
+        \addlinespace
+        
+        15. Client-side Cache & 
+        Busca de service worker e caches.open. & 
+        Não detectada \\
+        
+        \bottomrule
+    \end{tabularx}
+\end{table}
 
 \subsection{Implementação das correções}
 
