@@ -4,20 +4,20 @@
 
 O uso crescente de plataformas \textit{no-code}, como a Base44 (\url{https://base44.com}), veio simplificar o desenvolvimento de aplicações web, mas também trouxe novos desafios em termos de segurança \cite{ref54}. Estas soluções permitem que utilizadores construam aplicações funcionais sem qualquer contacto com o servidor ou com o código do \textit{backend}, o que reduz significativamente as possibilidades de análise e reforço da segurança.
 
-Este estudo tem como objetivo analisar e avaliar vulnerabilidades existentes ao nível do \textit{frontend} de uma aplicação desenvolvida na Base44. Procura-se demonstrar que, mesmo com acesso apenas ao código do lado do cliente (\textit{HTML}, \textit{CSS} e \textit{JavaScript}), é possível identificar riscos que podem comprometer a integridade, a confidencialidade e a disponibilidade da aplicação.
+Este estudo tem como objetivo analisar, avaliar e corrigir vulnerabilidades existentes ao nível do \textit{frontend} de uma aplicação desenvolvida na Base44. Procura-se demonstrar que, mesmo com acesso apenas ao código do lado do cliente (\textit{HTML}, \textit{CSS} e \textit{JavaScript}), é possível identificar riscos que podem comprometer a integridade, a confidencialidade e a disponibilidade (CIA) da aplicação.
 
 O trabalho assume um carácter exploratório e prático, focando-se na reprodução de falhas reais e na implementação de soluções corretivas. O principal objetivo é contribuir para a consciencialização e para o reforço da segurança em ambientes \textit{no-code}, onde o controlo técnico por parte dos programadores é limitado, mas onde os riscos continuam a ser relevantes.
 
-Todo o trabalho desenvolvido, incluindo este relatório em formato \LaTeX\;e os ficheiros do estudo prático (ainda por desenvolver), encontra-se disponível num repositório Git alojado no GitHub no seguinte endereço: \url{https://github.com/acavieira/SRSI}. O acesso ao repositório permite a consulta integral dos conteúdos, promovendo a transparência e facilitando a reprodução dos testes realizados.
+Todo o trabalho desenvolvido, incluindo este relatório em formato \LaTeX\;e os ficheiros do estudo prático, encontra-se disponível num repositório Git alojado no GitHub no seguinte endereço: \url{https://github.com/acavieira/SRSI}. O acesso ao repositório permite a consulta integral dos conteúdos, promovendo a transparência e facilitando a reprodução dos testes realizados.
 
 \subsection{Estrutura do Trabalho}
 
-Após esta introdução, o relatório está organizado de forma lógica e progressiva, acompanhando o desenvolvimento do projeto desde os seus fundamentos teóricos até à análise prática dos resultados.
+Após esta introdução, o relatório está organizado de forma lógica e progressiva, acompanhando o desenvolvimento do projeto desde os seus fundamentos teóricos até aos testes após as correções implementadas para corrigir as vulnerabilidades encontradas.
 
-A secção seguinte apresenta uma visão geral das principais abordagens de teste de segurança web, com a explicação dos modelos de \textit{pentesting} utilizados na área: \textit{caixa-preta}, \textit{caixa-branca} e \textit{caixa-cinzenta}. Nesta parte, é também justificada a escolha da abordagem de \textit{caixa-cinzenta}, por se adequar ao contexto específico da aplicação analisada.
+A secção seguinte apresenta uma visão geral das principais abordagens de teste de segurança web, com a explicação dos modelos de \textit{pentesting} utilizados: \textit{caixa-preta}, \textit{caixa-branca} e \textit{caixa-cinzenta}. Nesta parte, é também justificada a escolha da abordagem de \textit{caixa-cinzenta}, por se adequar ao contexto específico da aplicação analisada.
 
 De seguida, serão detalhadas as ferramentas utilizadas no processo de análise, bem como a justificação técnica para a sua seleção.
 
-Posteriormente, são apresentadas as vulnerabilidades identificadas na aplicação, cada uma acompanhada de uma explicação teórica, exemplos práticos e respetivas implicações de segurança.
+Posteriormente, são apresentadas as vulnerabilidades identificadas na aplicação, cada uma acompanhada de uma explicação teórica, exemplos práticos, respetivas implicações de segurança, correções efetuadas testes sobre as mesmas.
 
 Numa fase final, o relatório aborda vulnerabilidades previstas que não chegaram a ser confirmadas durante os testes e termina com uma reflexão crítica sobre as limitações da plataforma Base44, relacionando os resultados obtidos com os desafios mais amplos da segurança em ambientes \textit{no-code} baseados em inteligência artificial.
