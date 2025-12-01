@@ -2,20 +2,122 @@
 
 Nesta secção, descreve-se a arquitetura tecnológica do projeto e detalham-se as intervenções técnicas realizadas para mitigar as vulnerabilidades identificadas (secção \ref{sec:vulnerabilidades-detetadas}).
 
+\subsection{Stack Tecnológica e Arquitetura da Solução}
+
+O objeto de estudo é uma aplicação web, inicialmente concebida e gerada na plataforma de inteligência artificial Base44. O processo de preparação para os testes incluiu a geração de funcionalidades através de IA, a aquisição de direitos de acesso para exportação e a subsequente transferência do código-fonte do \textit{frontend} para um repositório GitHub. É importante salientar que a auditoria é realizada com acesso exclusivo ao código do lado do cliente (testes \textit{White Box} ao \textit{frontend}).
+
+Em termos técnicos, o projeto foi implementado como uma \textit{Single Page Application} (SPA) na linguagem JavaScript, com recurso à biblioteca React e à ferramenta de construção Vite. A estrutura interna dos ficheiros do projeto pode ser dividida em dois grupos lógicos.
+
+O primeiro grupo refere-se à configuração padrão da \textit{framework} (\textit{Scaffolding}). Estes ficheiros não são gerados pela rede neuronal de forma única para cada pedido, sendo, pelo contrário, ficheiros-tipo e imutáveis para a maioria dos projetos baseados nesta tecnologia. Neste grupo incluem-se ficheiros de configuração como o \texttt{vite.config.js} (definições do construtor), o \texttt{package.json} (lista de dependências), bem como os pontos de entrada da aplicação — \texttt{index.html} e \texttt{main.jsx}.
+
+O segundo grupo engloba os componentes e a lógica gerados diretamente pela inteligência artificial da Base44. Estes ficheiros encontram-se, predominantemente, nos diretórios \texttt{src/components} e \texttt{src/pages}. São estes que contêm o código único da interface e a lógica de negócio da aplicação específica, constituindo o foco principal da análise.
+
+Uma vez que não existe acesso à infraestrutura real do servidor (\textit{backend}), a arquitetura da aplicação foi adaptada para execução local. A interação com o \textit{backend} é emulada através de um SDK local, onde os pedidos reais à API foram substituídos por um serviço \textit{Mock}, que devolve dados de teste.
+
+\subsection{Metodologia de Testes}
+
+A análise de segurança foi realizada sobre uma aplicação web alojada na plataforma Base44, num contexto de acesso limitado à componente servidor. Por esse motivo, todos os testes foram conduzidos com abordagem \textit{black-box}, centrada no comportamento observado a partir do lado do cliente, bem como na análise dos recursos públicos disponibilizados pela aplicação. Nesta secção descrevem-se, de forma detalhada, as ferramentas utilizadas e a metodologia seguida.
+
+\subsubsection{cURL: Inspecção de Comunicação HTTP, CORS e Respostas do Servidor}
+
+A ferramenta cURL desempenhou um papel central no processo de testagem. Através dela foi possível examinar, de forma granular, o comportamento do servidor perante pedidos legítimos e alterados. A inspeção de cabeçalhos através de pedidos \texttt{HEAD} permitiu observar diretivas de segurança como \texttt{X-Frame-Options}, \texttt{Referrer-Policy} e configurações de \textit{cache}, enquanto pedidos com cabeçalhos manipulados possibilitaram avaliar a política CORS implementada pela aplicação. A utilização de diferentes valores de \texttt{Origin} tornou possível compreender até que ponto o servidor valida pedidos externos.
+
+O cURL foi igualmente utilizado para aceder diretamente a recursos estáticos, nomeadamente ficheiros JavaScript, imagens e potenciais ficheiros \texttt{.map}. Testes adicionais permitiram compreender o comportamento do servidor em cenários de tentativas de SSRF, bem como as diferenças entre pedidos efetuados para o domínio e para o endereço IP, revelando assim a atuação do CDN (Cloudflare) em diferentes contextos.
+
+\subsubsection{ffuf: Fuzzing de Caminhos e Descoberta de Estruturas Ocultas}
+
+O ffuf foi aplicado para explorar a estrutura de caminhos da aplicação e identificar potenciais áreas ocultas. Embora o ambiente Base44 utilize um modelo típico de SPA, onde múltiplos caminhos devolvem a mesma página inicial, o ffuf permitiu detetar quando um caminho correspondia a um recurso real ou quando era apenas tratado pelo \textit{router} interno do \textit{frontend}. Este processo ajudou a compreender o alcance público da aplicação e permitiu identificar quaisquer \textit{endpoints} ou páginas menos visíveis, contribuindo para a cartografia geral da superfície de exposição.
+
+\subsubsection{Gobuster: Enumeração Complementar de Recursos Estáticos}
+
+O Gobuster foi utilizado como complemento ao ffuf, sobretudo focado na enumeração de ficheiros e ativos estáticos. Esta abordagem permitiu confirmar o grau de homogeneidade das respostas do servidor e identificar quaisquer padrões invulgares que pudessem sugerir a existência de recursos adicionais. Apesar de a estrutura da aplicação ser bastante uniforme, esta ferramenta reforçou a verificação da consistência do comportamento do servidor perante pedidos fora do padrão.
+
+\subsubsection{sqlmap: Testes Negativos de SQL Injection}
+
+O sqlmap foi mobilizado com o objetivo de realizar testes negativos de SQL Injection, avaliando se parâmetros acessíveis ao utilizador poderiam estar vulneráveis a manipulação. Embora nenhuma tentativa de injeção tenha tido sucesso e o firewall de aplicação (WAF) tenha bloqueado diversas variantes dos testes, a sua utilização permitiu observar o modo como a plataforma Base44 reage a \textit{payloads} anómalos. O sqlmap contribuiu assim para verificar a robustez da aplicação e para documentar que não foram identificados pontos suscetíveis a este tipo de ataque.
+
+\subsubsection{grep: Análise Estática de Bundles JavaScript}
+
+Uma parte significativa da análise centrou-se nos \textit{bundles} JavaScript descarregados do \textit{frontend}, utilizando grep como ferramenta principal de processamento textual. Através dele foi possível procurar ocorrências de potenciais segredos embutidos nos ficheiros, como chaves de API, \textit{tokens} ou \textit{endpoints} internos. A ferramenta permitiu igualmente identificar a presença de padrões associados a vulnerabilidades de XSS, por exemplo inserções diretas via \texttt{innerHTML} ou o uso de funções potencialmente perigosas como \texttt{eval}.
+
+O grep serviu ainda para procurar referências a mapas de origem (\texttt{sourceMappingURL}), o que permitiu determinar se existiam informações de \textit{debug} expostas publicamente, e para detetar eventuais casos de conteúdo misto (HTTP dentro de HTTPS). Este tipo de análise revelou-se essencial para avaliar a higiene e segurança do código entregue ao navegador.
+
+\subsubsection{Qualys SSL Labs: Avaliação da Configuração TLS}
+
+Foi utilizada a plataforma Qualys SSL Labs para avaliar a configuração TLS da aplicação. Este teste permitiu obter uma visão completa das versões de TLS suportadas, dos conjuntos de cifragem utilizados e da presença de mecanismos como o \textit{Perfect Forward Secrecy}. A verificação incluiu também a pesquisa por vulnerabilidades amplamente conhecidas, como Heartbleed, ROBOT, DROWN, POODLE e SWEET32. A análise fornecida pelo SSL Labs permitiu validar que, do ponto de vista criptográfico, a aplicação se apoia numa configuração robusta providenciada pelo Cloudflare.
+
+\subsection{Metodologia Aplicada}
+
+A metodologia seguiu uma sequência estruturada de fases, combinando técnicas de análise passiva, inspeção manual e testes ativos. Cada etapa incluiu ferramentas específicas, selecionadas de acordo com o tipo de evidência procurada e com as limitações inerentes ao ambiente Base44.
+
+\begin{enumerate}
+    \item \textbf{Footprinting e recolha inicial de informação}\\
+    Nesta fase procurou-se compreender o comportamento geral da aplicação e do ambiente CDN que a envolve. Foram analisados os cabeçalhos HTTP, o comportamento do servidor perante pedidos simples e a forma como o Cloudflare processa diferentes origens.\\
+    \textbf{Ferramentas utilizadas:} cURL, Qualys SSL Labs.
+    
+    \item \textbf{Mapeamento da aplicação e descoberta de recursos}\\
+    Seguiu-se a cartografia dos recursos expostos ao cliente. Este processo incluiu a identificação de \textit{bundles} JavaScript, ativos estáticos, diretórios acessíveis e o modo como o \textit{router} da aplicação responde a caminhos inexistentes.\\
+    \textbf{Ferramentas utilizadas:} ffuf, Gobuster, cURL.
+    
+    \item \textbf{Análise estática do frontend}\\
+    Após recolha de ficheiros JavaScript, procedeu-se a uma análise detalhada do seu conteúdo, com foco na deteção de potenciais riscos de XSS, exposição de chaves, referências internas e presença de \textit{source maps}.\\
+    \textbf{Ferramentas utilizadas:} grep, cURL.
+    
+    \item \textbf{Testes ativos de segurança}\\
+    Foram realizados testes práticos destinados a avaliar a reação da aplicação a entradas inesperadas, incluindo \textit{fuzzing} de caminhos, manipulação de cabeçalhos CORS, pedidos malformados e tentativas controladas de SQL Injection.\\
+    \textbf{Ferramentas utilizadas:} ffuf, Gobuster, cURL, sqlmap.
+    
+    \item \textbf{Avaliação da camada TLS e configuração criptográfica}\\
+    Procedeu-se à análise aprofundada da configuração TLS do servidor, avaliando protocolos, cifragens e mecanismos de segurança adicionais.\\
+    \textbf{Ferramentas utilizadas:} Qualys SSL Labs.
+\end{enumerate}
+
+
 \subsection{Implementação das correções}
 
+Abaixo descrevem-se as correções aplicadas para cada vulnerabilidade detetada.
+
 \input{capitulos/07_parte_pratica_PASTA/source_tabs_disabling_PASTA/source_tabs_disabling}
-\input{capitulos/07_parte_pratica_PASTA/reverse_tabnabbing_PASTA/correcao_reverse_tabnabbing}
 \input{capitulos/07_parte_pratica_PASTA/7.2.2_Injecoes_inseguras_no_DOM/correcao_injecoes_inseguras_no_DOM}
 \input{capitulos/07_parte_pratica_PASTA/7.2.3_Reforco_da_CSP/correcao_reforco_da_CSP}
+\input{capitulos/07_parte_pratica_PASTA/reverse_tabnabbing_PASTA/correcao_reverse_tabnabbing}
 
 \subsection{Resultados Obtidos}
 
-\subsubsection*{Validação das Correções (Segundo Ciclo)}
+No levantamento inicial, foram identificadas 5 vulnerabilidades principais que comprometiam a confidencialidade e integridade da aplicação. Estas falhas permitiam desde a leitura do código-fonte original até à execução de scripts maliciosos no navegador da vítima (conforme detalhado na Secção \ref{sec:vulnerabilidades-detetadas}).
+Após a aplicação das medidas de mitigação, realizou-se um segundo ciclo de testes. A tabela abaixo resume o estado atual das vulnerabilidades:
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{|p{4cm}|p{2.8cm}|p{7.5cm}|}
+\hline
+\textbf{Vulnerabilidade} & \textbf{Estado no 2.º Ciclo} & \textbf{Observação} \\ \hline
+
+Source Map Exposure & Mitigada  & 
+Ficheiros \texttt{.map} deixaram de ser carregados pelo navegador (Erro 404 confirmado). \\ \hline
+
+Mixed Content & Mitigada  &
+Todos os recursos são forçados via HTTPS; consola do browser sem avisos de segurança mista. \\ \hline
+
+DOM-based XSS & Mitigada  &
+\textit{Payloads} de teste (\texttt{<script>alert(1)</script>}) são renderizados como texto simples e não executam. \\ \hline
+
+Open Redirects & Mitigada  &
+Tentativas de redirecionamento para \texttt{evil.com} resultam no retorno seguro à Homepage. \\ \hline
+
+Reverse Tabnabbing & Mitigada  &
+A tentativa de definir a \texttt{propriedade\_location} resulta numa falha. \\ \hline
+
+\end{tabular}
+\end{table}
+
+De seguida apresentam-se os resultados comparativos entre o estado inicial da aplicação e o estado após a implementação das correções de segurança.
+
+
 
 \input{capitulos/07_parte_pratica_PASTA/source_tabs_disabling_PASTA/evidencia_source_tabs_disabling}
-\input{capitulos/07_parte_pratica_PASTA/reverse_tabnabbing_PASTA/evidencia_reverse_tabnabbing}
 \input{capitulos/07_parte_pratica_PASTA/7.2.2_Injecoes_inseguras_no_DOM/evidencia_injecoes_inseguras_no_DOM}
 \input{capitulos/07_parte_pratica_PASTA/7.2.3_Reforco_da_CSP/evidencia_reforco_da_CSP}
+\input{capitulos/07_parte_pratica_PASTA/reverse_tabnabbing_PASTA/evidencia_reverse_tabnabbing}
 
 
