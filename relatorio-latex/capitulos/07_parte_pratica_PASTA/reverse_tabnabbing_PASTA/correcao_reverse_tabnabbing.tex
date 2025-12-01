@@ -5,7 +5,7 @@ No âmbito das correções de segurança implementadas, foi realizada uma procur
 
 Conforme evidenciado nas alterações de código (ver Figura \ref{fig:reverse_tabnabbing_codigo}), a correção foi aplicada nos ficheiros \texttt{src/pages/Layout.jsx} e \texttt{src/pages/Profile.jsx}. Nestes componentes, existiam links direcionados para perfis externos (LinkedIn) que expunham a aplicação ao risco de \textit{Reverse Tabnabbing}.
 
-\begin{figure}[hbtp]
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.8\linewidth]{capitulos/07_parte_pratica_PASTA/reverse_tabnabbing_PASTA/img/reverse_tabnabbing_codigo.png}
     \caption{Diff de código evidenciando a correção de segurança aplicada nos componentes Layout.jsx e Profile.jsx através da adição dos atributos rel.}
