@@ -8,7 +8,7 @@ Para validar a eficácia da \emph{Content-Security-Policy} (CSP), simulámos ten
     Ao tentar introduzir o script na página, o navegador bloqueou de imediato a ação e apresentou uma mensagem de violação da política, indicando que a diretiva \texttt{script-src} estava a ser aplicada corretamente. 
     Este comportamento confirma que a aplicação deixou de permitir a execução de scripts externos, reduzindo significativamente o risco de injeção de código malicioso.
     
-    \begin{figure}[hbtp]
+    \begin{figure}[H]
         \centering
         \includegraphics[width=0.95\textwidth]{capitulos/07_parte_pratica_PASTA/7.2.3_Reforco_da_CSP/img/evidencia1.png}
         \caption{Violação da Content-Security-Policy}
@@ -21,14 +21,14 @@ Para validar a eficácia da \emph{Content-Security-Policy} (CSP), simulámos ten
     Tal como esperado, o navegador bloqueou o carregamento e emitiu um aviso explícito de que a ação violava a política de segurança definida. 
     Este resultado demonstra que a aplicação está protegida contra a execução de objetos inseguros, reforçando o controlo sobre conteúdos que possam representar um risco adicional.
     
-    \begin{figure}[hbtp]
+    \begin{figure}[H]
         \centering
         \includegraphics[width=0.95\textwidth]{capitulos/07_parte_pratica_PASTA/7.2.3_Reforco_da_CSP/img/evidencia2.png}
         \caption{Executar código inline não autorizado}
         \label{fig:codigonaoautorizado}
     \end{figure}
 
-    \begin{figure}[hbtp]
+    \begin{figure}[H]
         \centering
         \includegraphics[width=0.95\textwidth]{capitulos/07_parte_pratica_PASTA/7.2.3_Reforco_da_CSP/img/evidencia3.png}
         \caption{Resultado de código inline não autorizado}
@@ -40,7 +40,7 @@ Para validar a eficácia da \emph{Content-Security-Policy} (CSP), simulámos ten
     Ao tentar executar \texttt{eval("alert('XSS')")} na consola, o navegador recusou a ação e apresentou uma mensagem indicando que a política não permite a avaliação de strings como JavaScript. 
     O facto de o alerta não ter sido exibido demonstra que a CSP está a impedir corretamente a execução de código dinâmico não autorizado, garantindo maior robustez contra ataques que dependem da manipulação do DOM.
     
-    \begin{figure}[hbtp]
+    \begin{figure}[H]
         \centering
         \includegraphics[width=0.95\textwidth]{capitulos/07_parte_pratica_PASTA/7.2.3_Reforco_da_CSP/img/evidencia4.png}
         \caption{Unsafe eval bloquedo pelo CSP}

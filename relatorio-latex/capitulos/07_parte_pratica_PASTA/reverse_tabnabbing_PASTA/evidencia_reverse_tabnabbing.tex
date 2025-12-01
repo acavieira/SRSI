@@ -9,7 +9,7 @@ O teste consistiu na injeção do seguinte comando JavaScript na consola da nova
 
 Conforme ilustrado na Figura \ref{fig:reverse_tabnabbing_antes}, ao executar o comando na consola da aba de destino, a aba de origem (que continha a aplicação Base44) foi imediatamente redirecionada para o Google. Isto comprova que, num cenário real, um atacante poderia substituir a aplicação legítima por uma página de \textit{phishing} idêntica, levando o utilizador a inserir as suas credenciais num site falso.
 
-\begin{figure}[hbtp]
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.8\linewidth]{capitulos/07_parte_pratica_PASTA/reverse_tabnabbing_PASTA/img/reverse_tabnabbing_antes.png}
     \caption{Demonstração da vulnerabilidade de \textit{Reverse Tabnabbing}. A execução do comando na consola (direita) forçou a aba original (esquerda) a navegar para google.com sem o consentimento do utilizador.}
@@ -20,7 +20,7 @@ Conforme ilustrado na Figura \ref{fig:reverse_tabnabbing_antes}, ao executar o c
 
 Após a aplicação dos atributos \texttt{rel="noopener noreferrer"}, o mesmo teste foi repetido. Conforme evidenciado na Figura \ref{fig:reverse_tabnabbing_depois}, a tentativa de definir a propriedade \texttt{.location} resultou numa falha, uma vez que o objeto \texttt{window.opener} é agora nulo. A aba original permaneceu segura e inalterada na aplicação Base44.
 
-\begin{figure}[hbtp]
+\begin{figure}[H]
     \centering
     \includegraphics[width=0.8\linewidth]{capitulos/07_parte_pratica_PASTA/reverse_tabnabbing_PASTA/img/reverse_tabnabbing_depois.png}
     \caption{Bloqueio do ataque de \textit{Reverse Tabnabbing}. A tentativa de redirecionamento gera um erro na consola (TypeError: Cannot set properties of null), confirmando que a aplicação original está protegida contra manipulação externa.}

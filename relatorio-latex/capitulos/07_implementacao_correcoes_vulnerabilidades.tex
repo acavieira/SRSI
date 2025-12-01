@@ -178,30 +178,36 @@ Abaixo descrevem-se as correções aplicadas para cada vulnerabilidade detetada.
 No levantamento inicial, foram identificadas 5 vulnerabilidades principais que comprometiam a confidencialidade e integridade da aplicação. Estas falhas permitiam desde a leitura do código-fonte original até à execução de scripts maliciosos no navegador da vítima (conforme detalhado na Secção \ref{sec:vulnerabilidades-detetadas}).
 Após a aplicação das medidas de mitigação, realizou-se um segundo ciclo de testes. A Tabela \ref{tab:resumo-correcoes} resume o estado atual das vulnerabilidades:
 
-\begin{table}[!ht]
-\caption{Resumos do estado das vulnerabilidades identificadas após as correções.}
-\label{tab:resumo-correcoes}
-\centering
-\begin{tabular}{|p{4cm}|p{2.8cm}|p{7.5cm}|}
-\hline
-\textbf{Vulnerabilidade} & \textbf{Estado no 2.º Ciclo} & \textbf{Observação} \\ \hline
-
-Source Map Exposure & Mitigada  & 
-Ficheiros \texttt{.map} deixaram de ser carregados pelo navegador (Erro 404 confirmado). \\ \hline
-
-Mixed Content & Não mitigada  &
-Não é possível corrigir no frontend: não existe qualquer recurso HTTP no código, portanto o mixed content vem do SDK Base44, que não pode ser modificado. \\ \hline
-
-DOM-based XSS & Mitigada  &
-\textit{Payloads} de teste (\texttt{<script>alert(1)</script>}) são renderizados como texto simples e não executam. \\ \hline
-
-Open Redirects & Mitigada  &
-Tentativas de redirecionamento para \texttt{evil.com} resultam no retorno seguro à Homepage. \\ \hline
-
-Reverse Tabnabbing & Mitigada  &
-A tentativa de definir a \texttt{propriedade\_location} resulta numa falha. \\ \hline
-
-\end{tabular}
+\begin{table}[H]
+    \caption{Resumos do estado das vulnerabilidades identificadas após as correções.}
+    \label{tab:resumo-correcoes}
+    \centering
+    \begin{tabularx}{\textwidth}{@{} >{\bfseries}p{4cm} p{3.5cm} >{\RaggedRight\arraybackslash}X @{}}
+        \toprule
+        Vulnerabilidade & Estado no 2.º Ciclo & Observação \\
+        \midrule
+        
+        Source Map Exposure & Mitigada & 
+        Ficheiros \texttt{.map} deixaram de ser carregados pelo navegador (Erro 404 confirmado). \\ 
+        \addlinespace
+        
+        Mixed Content & Não mitigada &
+        Não é possível corrigir no frontend: não existe qualquer recurso HTTP no código, portanto o mixed content vem do SDK Base44, que não pode ser modificado. \\ 
+        \addlinespace
+        
+        DOM-based XSS & Mitigada &
+        \textit{Payloads} de teste (\texttt{<script>alert(1)</script>}) são renderizados como texto simples e não executam. \\ 
+        \addlinespace
+        
+        Open Redirects & Mitigada &
+        Tentativas de redirecionamento para \texttt{https://malicious.com} resultam no retorno seguro à Homepage. \\ 
+        \addlinespace
+        
+        Reverse Tabnabbing & Mitigada &
+        A tentativa de definir a \texttt{propriedade\_location} resulta numa falha. \\
+        
+        \bottomrule
+    \end{tabularx}
 \end{table}
 
 De seguida apresentam-se os resultados comparativos entre o estado inicial da aplicação e o estado após a implementação das correções de segurança.
