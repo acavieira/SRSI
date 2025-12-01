@@ -1,57 +1,9 @@
 \section{Conclusão}
 
-O presente trabalho cumpriu o objetivo de analisar e avaliar as vulnerabilidades de segurança no \textit{frontend} de uma aplicação desenvolvida na plataforma \textit{no-code} Base44.
-A investigação, conduzida sob uma abordagem de testes de penetração do tipo caixa-cinzenta, confirmou que, mesmo com acesso restrito ao \textit{backend} e à infraestrutura do servidor,
-é possível identificar riscos de segurança significativos através da análise do código do lado do cliente (\textit{HTML}, \textit{CSS} e \textit{JavaScript}).
+A investigação realizada demonstrou que, apesar da agilidade oferecida por plataformas \textit{no-code} como a Base44, o código gerado automaticamente transporta vulnerabilidades de segurança significativas que podem comprometer a integridade e a confidencialidade dos dados.
 
-\subsection{Análise dos Resultados e Descobertas Chave}
+Após a identificação e análise das falhas, a implementação de medidas corretivas revelou-se eficaz na maioria dos vetores de ataque. Conforme evidenciado nos resultados, quatro das cinco vulnerabilidades críticas identificadas, incluindo \textit{DOM-based XSS}, \textit{Open Redirects}, \textit{Reverse Tabnabbing} e \textit{Source Map Exposure}, foram mitigadas com sucesso, neutralizando a execução de \textit{scripts} maliciosos e redirecionamentos indevidos.
 
-\paragraph{Validade da Abordagem}
-A metodologia de caixa-cinzenta provou ser a mais adequada para este contexto de desenvolvimento \textit{no-code}.
-Ao focar-se no código acessível do \textit{frontend}, foi possível aplicar técnicas de análise sobre os recursos disponíveis do lado do cliente,
-superando as limitações impostas pela natureza da plataforma Base44.
+No entanto, a persistência da vulnerabilidade de \textit{Mixed Content} destaca uma limitação crucial: a impossibilidade de intervenção direta sobre recursos geridos pelo SDK da plataforma (Base44). Este facto corrobora que a automação e a abstração do \textit{no-code} não garantem, \textit{per se}, a conformidade com as boas práticas de segurança, exigindo auditorias manuais contínuas.
 
-\paragraph{Descobertas e Conformidade}
-Apesar de não terem sido detetadas vulnerabilidades comuns como CORS Mal Configurado, riscos associados a \textit{Service Workers} ou exposição de \textit{Tokens},
-esta verificação demonstrou uma abordagem responsável, alinhada com os princípios do OWASP Top 10 e das normas NIST.
-A ausência destas falhas reforça a importância da segregação de segredos \cite{ref12} e do uso de CDNs reputadas.
-
-\paragraph{Limitações Estruturais da Plataforma Base44}
-Uma parte crucial da análise revelou que os maiores desafios de segurança advêm das restrições arquiteturais da Base44 \cite{ref16},
-que se baseia em \textit{deployments edge} via Cloudflare \cite{ref17}.
-Estas restrições impedem a configuração manual e granular de \textit{Security Headers} (como CSP e CORS),
-o que limita a capacidade de \textit{hardening} e mitigação de vulnerabilidades como XSS no nível da infraestrutura.
-
-\paragraph{Riscos de Exposição de Informação}
-Foi identificada a exposição potencial de ficheiros \textit{.map} (\textit{Source Maps}), que, apesar de terem retornado um código 404,
-permanecem referenciados nos \textit{scripts} minificados.
-Esta situação alinha-se com relatórios de outros utilizadores da plataforma \cite{ref22} e representa um risco de fuga de informação (OWASP A05:2021) \cite{ref2},
-caso a política de bloqueio da plataforma falhe num futuro \textit{deploy}.
-
-\paragraph{Impacto do \textit{Caching} Persistente}
-A política de \textit{caching} agressiva da Base44/Cloudflare, embora benéfica para a \textit{performance},
-levanta preocupações sobre a lentidão na propagação de correções críticas, o que pode atrasar o ciclo de resposta a incidentes (IR) \cite{ref28}.
-
-\subsection{Recomendações e Trabalho Futuro}
-
-Este estudo sublinha a necessidade de os programadores em ambientes \textit{no-code} assumirem um papel proativo na segurança,
-compensando a falta de controlo a nível do servidor com medidas de reforço no código e práticas de auditoria.
-
-Recomenda-se, para futuros projetos na Base44, a adoção das seguintes medidas:
-
-\paragraph{Remoção de Referências a Source Maps}
-Eliminar ativamente as referências \textit{sourceMappingURL} em \textit{builds} de produção,
-garantindo que mesmo um erro na política de \textit{caching} da plataforma não exponha o código fonte original.
-
-\paragraph{Testes Regulares}
-Utilizar ferramentas automatizadas (como \textit{Burp Suite} ou \textit{OWASP ZAP}) \cite{ref23} para verificar a exposição de ficheiros e cabeçalhos de segurança,
-integrando a segurança no ciclo de vida do desenvolvimento (\textit{SDLC}) \cite{ref4}.
-
-\paragraph{Gestão de Cache}
-Reavaliar periodicamente a configuração de \textit{cache} após a aplicação de correções críticas de segurança,
-para garantir a rápida propagação das mitigações implementadas.
-
-Em suma, o projeto contribui para a consciencialização de que o desenvolvimento em plataformas \textit{no-code}, mesmo com IA, não elimina a superfície de ataque.
-A segurança da aplicação deve ser vista como uma responsabilidade partilhada,
-onde o controlo técnico limitado no ambiente da plataforma exige uma atenção redobrada aos riscos colaterais
-e à manutenção de boas práticas no código do lado do cliente \cite{ref51}.
+Em suma, este projeto contribui para uma compreensão mais profunda dos riscos no desenvolvimento \textit{no-code}, sublinhando a importância de mecanismos de validação em todo o ciclo de vida da aplicação. Reforça-se, assim, a necessidade de uma abordagem de segurança defensiva e proativa, especialmente em cenários onde o programador detém apenas um controlo parcial sobre a infraestrutura subjacente.
