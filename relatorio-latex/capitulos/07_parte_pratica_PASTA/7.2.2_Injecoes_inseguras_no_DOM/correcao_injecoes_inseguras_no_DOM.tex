@@ -1,0 +1,34 @@
+\subsubsection{Injeções Inseguras no DOM}
+
+Durante a análise foi identificado no ficheiro \texttt{chart.jsx} o uso de 
+\texttt{dangerouslySetInnerHTML}, uma função do React que permite a inserção direta 
+de código HTML no DOM. Este mecanismo é reconhecido como um \emph{sink} inseguro, 
+uma vez que qualquer valor não validado inserido no atributo \texttt{\_\_html} 
+pode ser interpretado pelo navegador como código executável, permitindo a ocorrência 
+de ataques do tipo DOM-based XSS. A Figura~\ref{fig:codigo-vulneravel} apresenta o 
+trecho vulnerável.
+
+\begin{figure}[hbtp]
+    \centering
+    \includegraphics[width=0.95\textwidth]{capitulos/07_parte_pratica_PASTA/7.2.2_Injecoes_inseguras_no_DOM/img/Figura2.png}
+    \caption{Exemplo de código vulnerável XSS}
+    \label{fig:codigo-vulneravel}
+\end{figure}
+
+Para mitigar esta vulnerabilidade, a geração dinâmica de estilos foi reescrita de forma 
+a eliminar completamente o uso de \texttt{dangerouslySetInnerHTML}. Em vez de injetar HTML 
+diretamente no DOM, a nova abordagem constrói a folha de estilos como uma \emph{string} 
+controlada e atribui-a ao elemento \texttt{<style>} através de \emph{children} seguros do 
+React, impedindo a interpretação de conteúdo arbitrário. O código corrigido encontra-se 
+representado na Figura~\ref{fig:codigo-corrigido}.
+
+\begin{figure}[hbtp]
+    \centering
+    \includegraphics[width=0.95\textwidth]{capitulos/07_parte_pratica_PASTA/7.2.2_Injecoes_inseguras_no_DOM/img/Figura3.png}
+    \caption{Exemplo do código corrigido}
+    \label{fig:codigo-corrigido}
+\end{figure}
+
+Para além da remoção do \emph{sink} vulnerável, foram ainda aplicadas validações adicionais,
+tais como o uso de \texttt{config || \{\}} para prevenir acessos inesperados a propriedades 
+indefinidas e filtragem de valores nulos antes da construção das regras CSS.
