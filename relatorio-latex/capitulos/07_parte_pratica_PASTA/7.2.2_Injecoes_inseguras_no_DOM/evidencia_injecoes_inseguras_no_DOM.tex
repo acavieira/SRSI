@@ -1,0 +1,35 @@
+\subsubsection{Injeções Inseguras no DOM}
+
+Após a aplicação das correções, repetiram-se os testes de injeção com \emph{payloads} típicos de XSS (\texttt{<img onerror=alert(1)>}, \texttt{"<script>alert(1)</script>"}), e verificou-se que o conteúdo passou a ser tratado exclusivamente como texto dentro das regras CSS, sem qualquer execução de código. Isto confirma que o risco de DOM-based XSS associado a este componente foi eliminado.
+
+Procedeu-se à validação prática da mitigação da vulnerabilidade DOM-based XSS. O objetivo do teste foi verificar se um atacante conseguiria injetar código JavaScript através do parâmetro \texttt{config.color}, utilizado internamente na geração dinâmica de estilos do componente \texttt{ChartContainer}.
+
+Para este teste, foi construída uma prova de conceito (PoC) onde o valor do parâmetro \texttt{color} era substituído por um \emph{payload} malicioso contendo uma tentativa explícita de injeção de \texttt{script}:
+
+\begin{verbatim}
+const payload = 'red; } <script>window.HACKED = true</script> /*'
+\end{verbatim}
+
+Caso o componente ainda estivesse vulnerável, o código contido dentro da tag \texttt{<script>} seria interpretado pelo navegador e o valor \texttt{window.HACKED} passaria a ser definido como \texttt{true}, permitindo detectar a execução de código arbitrário no contexto da aplicação.
+
+O componente foi então renderizado com esta configuração maliciosa, e no ciclo de vida \texttt{useEffect()} foi registado no console o valor observado de \texttt{window.HACKED}, conforme o exemplo:
+
+\begin{figure}[hbtp]
+    \centering
+    \includegraphics[width=0.95\textwidth]{capitulos/07_parte_pratica_PASTA/7.2.2_Injecoes_inseguras_no_DOM/img/print4.png}
+    \caption{Output do console após a injeção do \emph{payload} malicioso}
+    \label{fig:codigo-corrigido}
+\end{figure}
+
+
+Através do resultado, percebe-se que o \emph{script} injetado não foi interpretado pelo navegador. Isto porque o \emph{payload} incluía uma tag \texttt{<script>}, que num cenário vulnerável seria incorporada no DOM e executada. No entanto, após a correção, a string é incorporada apenas como conteúdo literal dentro de regras CSS, não sendo processada como HTML. Como consequência, o navegador não executa o código JavaScript malicioso, pelo que a variável global \texttt{window.HACKED} não é criada. O valor \texttt{undefined} confirma a ausência de execução de código, indicando que:
+
+\begin{itemize}
+    \item nenhuma variável global com o nome \texttt{HACKED} foi definida;
+    \item nenhuma instrução JavaScript proveniente do utilizador foi executada;
+    \item o conteúdo gerado no \texttt{<style>} é tratado como texto puro e não como HTML interpretável.
+\end{itemize}
+
+Assim, o teste comprova que o mecanismo de injeção anteriormente vulnerável foi neutralizado. A prova de conceito demonstra que, após remover o uso de \texttt{dangerouslySetInnerHTML} e substituir o mecanismo de geração dinâmica de CSS por um processo controlado e não interpretável como HTML, o componente deixa de permitir que valores fornecidos pelo utilizador originem execução de \emph{scripts} no navegador.
+
+O resultado \texttt{undefined} constitui evidência experimental de que a tentativa de XSS falhou, validando a eficácia da correção e garantindo que o componente \texttt{ChartContainer} já não apresenta a vulnerabilidade identificada inicialmente.
