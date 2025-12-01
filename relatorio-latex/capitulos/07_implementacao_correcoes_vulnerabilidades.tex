@@ -81,11 +81,11 @@ Abaixo descrevem-se as correções aplicadas para cada vulnerabilidade detetada.
 \input{capitulos/07_parte_pratica_PASTA/7.2.2_Injecoes_inseguras_no_DOM/correcao_injecoes_inseguras_no_DOM}
 \input{capitulos/07_parte_pratica_PASTA/7.2.3_Reforco_da_CSP/correcao_reforco_da_CSP}
 \input{capitulos/07_parte_pratica_PASTA/reverse_tabnabbing_PASTA/correcao_reverse_tabnabbing}
+\input{capitulos/07_parte_pratica_PASTA/open_redirect/open_redirect_correcao}
 
 \subsection{Resultados Obtidos}
 
-No levantamento inicial, foram identificadas 5 vulnerabilidades principais que comprometiam a confidencialidade e integridade da aplicação. Estas falhas permitiam desde a leitura do código-fonte original até à execução de scripts maliciosos no navegador da vítima (conforme detalhado na Secção \ref{sec:vulnerabilidades-detetadas}).
-Após a aplicação das medidas de mitigação, realizou-se um segundo ciclo de testes. A tabela abaixo resume o estado atual das vulnerabilidades:
+No levantamento inicial, foram identificadas 5 vulnerabilidades principais que comprometiam a confidencialidade e integridade da aplicação. Estas falhas permitiam desde a leitura do código-fonte original até à execução de scripts maliciosos no navegador da vítima (conforme detalhado na Secção \ref{sec:vulnerabilidades-detetadas}). A tabela abaixo resume o estado atual das vulnerabilidades:
 
 \begin{table}[h!]
 \centering
@@ -96,8 +96,8 @@ Após a aplicação das medidas de mitigação, realizou-se um segundo ciclo de 
 Source Map Exposure & Mitigada  & 
 Ficheiros \texttt{.map} deixaram de ser carregados pelo navegador (Erro 404 confirmado). \\ \hline
 
-Mixed Content & Mitigada  &
-Todos os recursos são forçados via HTTPS; consola do browser sem avisos de segurança mista. \\ \hline
+Mixed Content & Não mitigada  &
+Não é possível corrigir no frontend: não existe qualquer recurso HTTP no código, portanto o mixed content vem do SDK Base44, que não pode ser modificado. \\ \hline
 
 DOM-based XSS & Mitigada  &
 \textit{Payloads} de teste (\texttt{<script>alert(1)</script>}) são renderizados como texto simples e não executam. \\ \hline
@@ -119,5 +119,6 @@ De seguida apresentam-se os resultados comparativos entre o estado inicial da ap
 \input{capitulos/07_parte_pratica_PASTA/7.2.2_Injecoes_inseguras_no_DOM/evidencia_injecoes_inseguras_no_DOM}
 \input{capitulos/07_parte_pratica_PASTA/7.2.3_Reforco_da_CSP/evidencia_reforco_da_CSP}
 \input{capitulos/07_parte_pratica_PASTA/reverse_tabnabbing_PASTA/evidencia_reverse_tabnabbing}
+\input{capitulos/07_parte_pratica_PASTA/open_redirect/open_redirect_evidencia}
 
 
