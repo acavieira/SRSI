@@ -5,8 +5,9 @@ Para demonstrar a mitigação da vulnerabilidade, foi executada uma Prova de Con
 
 O teste consistiu na injeção do seguinte comando JavaScript na consola da nova aba aberta: \texttt{window.opener.location = 'https://www.google.com';}
 
-1. Cenário Vulnerável (Antes da Correção)
-Conforme ilustrado na Figura X, ao executar o comando na consola da aba de destino, a aba de origem (que continha a aplicação Base44) foi imediatamente redirecionada para o Google. Isto comprova que, num cenário real, um atacante poderia substituir a aplicação legítima por uma página de \textit{phishing} idêntica, levando o utilizador a inserir as suas credenciais num site falso.
+\noindent\textbf{1. Cenário Vulnerável (Antes da Correção)}
+
+Conforme ilustrado na Figura \ref{fig:reverse_tabnabbing_antes}, ao executar o comando na consola da aba de destino, a aba de origem (que continha a aplicação Base44) foi imediatamente redirecionada para o Google. Isto comprova que, num cenário real, um atacante poderia substituir a aplicação legítima por uma página de \textit{phishing} idêntica, levando o utilizador a inserir as suas credenciais num site falso.
 
 \begin{figure}[hbtp]
     \centering
@@ -15,8 +16,9 @@ Conforme ilustrado na Figura X, ao executar o comando na consola da aba de desti
     \label{fig:reverse_tabnabbing_antes}
 \end{figure}
 
-2. Cenário Mitigado (Após a Correção)
-Após a aplicação dos atributos \texttt{rel="noopener noreferrer"}, o mesmo teste foi repetido. Conforme evidenciado na Figura B, a tentativa de definir a propriedade \texttt{.location} resultou numa falha, uma vez que o objeto \texttt{window.opener} é agora nulo. A aba original permaneceu segura e inalterada na aplicação Base44.
+\noindent\textbf{2. Cenário Mitigado (Após a Correção)}
+
+Após a aplicação dos atributos \texttt{rel="noopener noreferrer"}, o mesmo teste foi repetido. Conforme evidenciado na Figura \ref{fig:reverse_tabnabbing_depois}, a tentativa de definir a propriedade \texttt{.location} resultou numa falha, uma vez que o objeto \texttt{window.opener} é agora nulo. A aba original permaneceu segura e inalterada na aplicação Base44.
 
 \begin{figure}[hbtp]
     \centering
