@@ -18,6 +18,12 @@
 %% pdflatex relatorio
 %%
 
+%% Linux
+%% sudo docker run --rm -v "${PWD}:/doc:Z" -w /doc --user 0 texlive/texlive pdflatex relatorio.tex
+%% sudo docker run --rm -v "${PWD}:/doc:Z" -w /doc --user 0 texlive/texlive bibtex relatorio
+%% sudo docker run --rm -v "${PWD}:/doc:Z" -w /doc --user 0 texlive/texlive pdflatex relatorio.tex
+
+
 \documentclass[a4paper, 12pt]{article}
 %\documentclass[a4paper, 12pt]{report}
 
@@ -32,6 +38,8 @@
 \usepackage{indentfirst} % identar a primeira linha
 \usepackage[]{tocbibind} % referencias aparecerem no indice
 \usepackage{url}
+\usepackage{graphicx} % incluir imagens
+\usepackage{float} % fornece o modificador [H] para figuras
 
 \usepackage{geometry}
 \geometry{margin=2.5cm} % diminuir a margem
