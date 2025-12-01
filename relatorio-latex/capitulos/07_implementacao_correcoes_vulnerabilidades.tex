@@ -182,10 +182,6 @@ Após a aplicação das medidas de mitigação, realizou-se um segundo ciclo de 
     \caption{Resumos do estado das vulnerabilidades identificadas após as correções.}
     \label{tab:resumo-correcoes}
     \centering
-    % Definição das colunas ajustada para o conteúdo desta tabela
-    % Coluna 1: Negrito, 4cm
-    % Coluna 2: Normal, 3.5cm (para caber "Não mitigada")
-    % Coluna 3: X (preenche o resto), alinhado à esquerda
     \begin{tabularx}{\textwidth}{@{} >{\bfseries}p{4cm} p{3.5cm} >{\RaggedRight\arraybackslash}X @{}}
         \toprule
         Vulnerabilidade & Estado no 2.º Ciclo & Observação \\
@@ -204,7 +200,7 @@ Após a aplicação das medidas de mitigação, realizou-se um segundo ciclo de 
         \addlinespace
         
         Open Redirects & Mitigada &
-        Tentativas de redirecionamento para \texttt{evil.com} resultam no retorno seguro à Homepage. \\ 
+        Tentativas de redirecionamento para \texttt{https://malicious.com} resultam no retorno seguro à Homepage. \\ 
         \addlinespace
         
         Reverse Tabnabbing & Mitigada &
