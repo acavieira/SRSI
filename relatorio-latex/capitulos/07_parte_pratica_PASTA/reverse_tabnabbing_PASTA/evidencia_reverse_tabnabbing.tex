@@ -1,0 +1,34 @@
+
+\paragraph{Correção das Ligações Externas Inseguras (Reverse Tabnabbing)}
+
+Para demonstrar a mitigação da vulnerabilidade, foi executada uma Prova de Conceito (PoC) simulando um cenário de ataque, antes e depois da mitigação, onde a página externa força o redirecionamento da aplicação original para um site arbitrário (neste exemplo, \url{https://www.google.com}).
+
+O teste consistiu na injeção do seguinte comando JavaScript na consola da nova aba aberta: \texttt{window.opener.location = 'https://www.google.com';}
+
+1. Cenário Vulnerável (Antes da Correção)
+Conforme ilustrado na Figura X, ao executar o comando na consola da aba de destino, a aba de origem (que continha a aplicação Base44) foi imediatamente redirecionada para o Google. Isto comprova que, num cenário real, um atacante poderia substituir a aplicação legítima por uma página de \textit{phishing} idêntica, levando o utilizador a inserir as suas credenciais num site falso.
+
+\begin{figure}[hbtp]
+    \centering
+    \includegraphics[width=0.8\linewidth]{capitulos/07_parte_pratica_PASTA/reverse_tabnabbing_PASTA/img/reverse_tabnabbing_antes.png}
+    \caption{Demonstração da vulnerabilidade de Reverse Tabnabbing. A execução do comando na consola (direita) forçou a aba original (esquerda) a navegar para google.com sem o consentimento do utilizador.}
+    \label{fig:reverse_tabnabbing_antes}
+\end{figure}
+
+2. Cenário Mitigado (Após a Correção)
+Após a aplicação dos atributos \texttt{rel="noopener noreferrer"}, o mesmo teste foi repetido. Conforme evidenciado na Figura B, a tentativa de definir a propriedade \texttt{.location} resultou numa falha, uma vez que o objeto \texttt{window.opener} é agora nulo. A aba original permaneceu segura e inalterada na aplicação Base44.
+
+\begin{figure}[hbtp]
+    \centering
+    \includegraphics[width=0.8\linewidth]{capitulos/07_parte_pratica_PASTA/reverse_tabnabbing_PASTA/img/reverse_tabnabbing_depois.png}
+    \caption{Bloqueio do ataque de Reverse Tabnabbing. A tentativa de redirecionamento gera um erro na consola (TypeError: Cannot set properties of null), confirmando que a aplicação original está protegida contra manipulação externa.}
+    \label{fig:reverse_tabnabbing_depois}
+\end{figure}
+
+Nota sobre Navegadores Modernos
+É importante notar que, embora navegadores modernos baseados em Chromium (v.\,88+) apliquem implicitamente o comportamento \textit{noopener} em links \texttt{target="\_blank"}, a correção explícita implementada é essencial por dois motivos:
+
+\begin{itemize}
+    \item Garante a compatibilidade e segurança em navegadores mais antigos (\textit{Legacy Support});
+    \item Aplica a diretiva \textit{noreferrer}, que não é assumida por defeito pelos navegadores, protegendo assim a privacidade dos dados de navegação do utilizador.
+\end{itemize}

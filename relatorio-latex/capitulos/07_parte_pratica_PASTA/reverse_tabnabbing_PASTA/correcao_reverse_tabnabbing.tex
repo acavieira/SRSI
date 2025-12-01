@@ -1,0 +1,22 @@
+
+\subsubsection{Correção das Ligações Externas Inseguras (Reverse Tabnabbing)}
+
+No âmbito das correções de segurança implementadas, foi realizada uma procura direcionada aos componentes de frontend da aplicação para identificar todas as instâncias de navegação externa insegura. Foram detetados elementos de âncora (\texttt{<a>}) que utilizavam a propriedade \texttt{target="\_blank"} sem as devidas medidas de isolamento de contexto.
+
+Conforme evidenciado nas alterações de código (ver Figura \ref{fig:reverse_tabnabbing_codigo}), a correção foi aplicada nos ficheiros \texttt{src/pages/Layout.jsx} e \texttt{src/pages/Profile.jsx}. Nestes componentes, existiam links direcionados para perfis externos (LinkedIn) que expunham a aplicação ao risco de \textit{Reverse Tabnabbing}.
+
+\begin{figure}[hbtp]
+    \centering
+    \includegraphics[width=0.8\linewidth]{capitulos/07_parte_pratica_PASTA/reverse_tabnabbing_PASTA/img/reverse_tabnabbing_codigo.png}
+    \caption{Diff de código evidenciando a correção de segurança aplicada nos componentes Layout.jsx e Profile.jsx através da adição dos atributos rel.}
+    \label{fig:reverse_tabnabbing_codigo}
+\end{figure}
+
+A mitigação consistiu na injeção explícita do atributo \texttt{rel="noopener noreferrer"} nas tags afetadas. Esta alteração instrui o navegador a:
+
+\begin{itemize}
+    \item \textbf{Noopener}: Garantir que a nova aba é instanciada num processo ou contexto separado, definindo \texttt{window.opener} como nulo.
+    \item \textbf{Noreferrer}: Impedir o envio do cabeçalho \textit{Referer}, assegurando que o site de destino não recebe informações sobre a origem do tráfego.
+\end{itemize}
+
+Após a recompilação e execução da aplicação, verificou-se que a abertura destes links externos mantém a funcionalidade esperada (abertura em nova aba), mas elimina o vetor de ataque anteriormente existente.
